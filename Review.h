@@ -18,6 +18,11 @@ public:
 
     Review(const string &reviewId, const string &reviewText, const string &appVersion, const string &postedDate, int upvotes);
 
+    //construtor vazio para possiblitar criação de array
+    Review();
+
+    ~Review();
+
     const string &getReviewId() const;
 
     void setReviewId(const string &reviewId);
@@ -37,6 +42,9 @@ public:
     int getUpvotes() const;
 
     void setUpvotes(int upvotes);
+
+    void print();
+
 };
 
 

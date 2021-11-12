@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "Review.h"
+#include <string.h>
 
 int menu(){
     int selecao;
@@ -17,7 +18,7 @@ int menu(){
     return selecao;
 }
 
-void selecionar(int selecao, Review* review, ifstream& input_file){
+void selecionar(int selecao, ifstream& input_file){
 
     switch (selecao)
     {
@@ -48,7 +49,8 @@ void selecionar(int selecao, Review* review, ifstream& input_file){
         }
     }
 }
-int mainMenu(ifstream& input_file, Review* review){
+
+int mainMenu(ifstream& input_file){
     int selecao = 1;
 
     while(selecao != 0)
@@ -56,12 +58,156 @@ int mainMenu(ifstream& input_file, Review* review){
         //system("cls");
         selecao = menu();
 
-        selecionar(selecao, review, input_file);
+        selecionar(selecao, input_file);
 
 
     }
     return 0;
 }
+
+
+void strToData(int* current, char delimiter, char* object, char* buffer, int objectSize){
+    int i = 0;
+    for(i = 0; i < objectSize && buffer[*current] != '\0' && buffer[*current] != '\n' && buffer[*current] != delimiter; i++){
+        object[i] = buffer[*current];
+        (*current)++;
+    }
+    object[i] = '\0';
+
+    (*current)++;
+}
+
+void strToReview(int* current, char* object, char* buffer, int objectSize){
+    int i = 0;
+    int lastQuotations = *current;
+    int lastQuotationsObject = 0;
+    bool check = false;
+    char delimiter = ',';
+
+    if(buffer[*current] == '"'){
+        check = true;
+        delimiter = '\n';
+    }
+
+    for(i = 0; i < objectSize && buffer[*current] != '\0' && buffer[*current] != '\n' && buffer[*current] != delimiter; i++){
+        object[i] = buffer[*current];
+
+        if(check && buffer[*current] == '"'){
+            lastQuotations = (*current);
+            lastQuotationsObject = i;
+        }
+
+        (*current)++;
+
+    }
+
+    if(check){
+        object[lastQuotationsObject] = '\0';
+        (*current) = lastQuotations+1;
+    }
+    (*current)++;
+}
+
+Review* buildReview(char* buffer)
+{
+    char* id = new char[89];
+    char* review_text = new char[3500];
+    char* upvotes = new char[10];
+    char* app_version = new char[20];
+    char* posted_date = new char[20];
+
+    char delimiter = ',';
+    int current = 0;
+
+
+    strToData(&current, delimiter, id, buffer, 89);
+    strToReview(&current, review_text, buffer, 3500);
+    strToData(&current, delimiter, upvotes, buffer, 10);
+    strToData(&current, delimiter, app_version, buffer, 20);
+    strToData(&current, delimiter, posted_date, buffer, 20);
+
+//    cout << "ERRO DE review_text: " << review_text << endl;
+//    cout << "ERRO DE upvotes: " << upvotes << endl;
+//    cout << "ERRO DE app_version: " << app_version << endl;
+//    cout << "ERRO DE posted_date: " << posted_date << endl;
+
+    Review *review;
+
+    try{
+        review = new Review(id, review_text, app_version, posted_date, stoi(upvotes));
+
+    } catch (...){
+        review = nullptr;
+        cout << "Erro de stoi: id da linha: " << id << endl;
+    }
+
+    delete [] id;
+    delete [] review_text;
+    delete [] app_version;
+    delete [] posted_date;
+    delete [] upvotes;
+
+    return review;
+}
+
+
+
+bool processar(ifstream& input_file){
+
+    constexpr size_t bufferSize = 1024*1024*5; //equivalente a 5mb de memoria
+    int const linesize = 3500;
+    constexpr size_t readBufferSize = bufferSize - linesize;
+    char* table_head = new char[100];
+
+
+    input_file.getline(table_head, linesize, '\n');
+    int counter = 0;
+    Review* review_list[100000];
+
+
+    while (input_file)
+    {
+
+
+        //criando buffer auxiliar
+        char* buffer = new char[bufferSize];
+        char* bufferAux = new char[linesize];
+
+        //criando buffer de leitura, buscando por tamanho setado
+        // e utilizando o getline para ir para a proxima linha
+        input_file.read(buffer, readBufferSize);
+
+        input_file.getline(bufferAux, linesize, '\n');
+
+        strcat(buffer, bufferAux);
+
+        int current = 0;
+        while(buffer[current] != '\n' && current < linesize){
+
+            char* line = new char[linesize];
+
+            int i = 0;
+            for(i = 0; i < linesize && (buffer[current] != '\n'); i++){
+                line[i] = buffer[current];
+                current++;
+            }
+
+            line[i] = '\0';
+            current++;
+
+            Review *review = buildReview(line);
+            counter++;
+
+            delete [] line;
+        }
+
+        delete [] bufferAux;
+
+    }
+
+    return true;
+}
+
 int main(int argc, char const *argv[]) {
 
     //Verifica se todos os parametros do programa foram entrados
@@ -83,13 +229,12 @@ int main(int argc, char const *argv[]) {
 
     //Abrindo arquivo de entrada
     ifstream input_file;
-    //input_file.open(argv[1], ios::in);
+    input_file.open(argv[1], ios::in);
 
-
-    Review* review;
     if(input_file.is_open())
     {
-        mainMenu(input_file, review);
+        processar(input_file);
+        mainMenu(input_file);
     }else
         cout << "Impossibilitado de abrir o arquivo" << endl;
 
@@ -100,10 +245,6 @@ int main(int argc, char const *argv[]) {
 
     //Review* review = new Review("1234abcd", "Muito legal tiktok", "3.2", "22/10/2021", 30);
 
-    //cout << "Id: " << review->getReviewId() << endl;
-    //cout << "App Version: " << review->getAppVersion() << endl;
-    //cout << "Data de postagem: " << review->getPostedDate() << endl;
-    //cout << "Texto: " << review->getReviewText() << endl;
-    //cout << "Upvotes: " << review->getUpvotes() << endl;
+
     //return 0;
 }
