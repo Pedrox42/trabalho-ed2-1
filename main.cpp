@@ -154,7 +154,7 @@ Review* buildReview(char* buffer)
 
 bool processar(ifstream& input_file){
 
-    constexpr size_t bufferSize = 1024*1024*5; //equivalente a 5mb de memoria
+    constexpr size_t bufferSize = 1024*1024*6; //equivalente a 5mb de memoria
     int const linesize = 3500;
     constexpr size_t readBufferSize = bufferSize - linesize;
     char* table_head = new char[100];
@@ -187,14 +187,30 @@ bool processar(ifstream& input_file){
             char* line = new char[linesize];
 
             int i = 0;
-            for(i = 0; i < linesize && (buffer[current] != '\n'); i++){
+            int virgulas = 0;
+            bool entreAspas = false;
+            int newlines = 0;
+            for(i = 0; i < linesize; i++){
+                if(buffer[current] == ',' && !entreAspas ){
+                    virgulas++;
+                }
+
+                if(buffer[current] == '"'){
+                    entreAspas = !entreAspas;
+                }
+
+                if(buffer[current] == '\n' && virgulas == 4){
+                    break;
+                } else if(buffer[current] == '\n'){
+                    buffer[current] = ' ';
+                }
+
                 line[i] = buffer[current];
                 current++;
             }
 
             line[i] = '\0';
             current++;
-
             Review *review = buildReview(line);
             counter++;
 
