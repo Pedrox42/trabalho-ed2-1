@@ -236,26 +236,68 @@ int main(int argc, char const *argv[]) {
     string program_name(argv[0]);
     string input_file_name(argv[1]);
 
-    string instance;
-    if(!(input_file_name.find(".csv") <= input_file_name.size()))
+    //Procura o ultimo caracter especificado
+    string found = input_file.find_last_of(".")
+
+    if((input_file.substr(found+1))!="bin")
     {
-        cout << "Erro! Esperado arquivo CSV." << endl;
-        return 1;
+        //Arquivo binario não encontrado, procurando arquivo csv para pré-tratamento
+        if((input_file.substr(found+1))!="csv")
+        {
+            //Arquivo csv não encontrado
+            cout << "Erro! Esperado arquivo binário ou CSV." << endl;
+            return 1;
+        } else {
+            //Arquivo csv encontrado, abrindo arquivo de entrada
+            ifstream input_file;
+            input_file.open(argv[1], ios::in);
+
+            if(input_file.is_open())
+            {
+                // Pré-processamento do arquivo csv para binário
+                processar(input_file);
+                mainMenu(input_file);
+            }else
+                cout << "Impossibilitado de abrir o arquivo" << endl;
+
+            //Fechando arquivo de entrada
+            input_file.close();
+        }
+    } else{
+        //Arquivo binario encontrado, abrindo arquivo de entrada
+        ifstream input_file;
+        input_file.open(argv[1], ios::in);
+
+        if(input_file.is_open())
+        {
+            mainMenu(input_file);
+        }else
+            cout << "Impossibilitado de abrir o arquivo" << endl;
+
+        //Fechando arquivo de entrada
+        input_file.close();
+        
     }
 
+    // if(!(input_file_name.find(".csv") <= input_file_name.size()))
+    // {
+    //     cout << "Erro! Esperado arquivo CSV." << endl;
+    //     return 1;
+    // }
+
     //Abrindo arquivo de entrada
-    ifstream input_file;
-    input_file.open(argv[1], ios::in);
+    // ifstream input_file;
+    // input_file.open(argv[1], ios::in);
 
-    if(input_file.is_open())
-    {
-        processar(input_file);
-        mainMenu(input_file);
-    }else
-        cout << "Impossibilitado de abrir o arquivo" << endl;
+    // if(input_file.is_open())
+    // {
+    //     processar(input_file);
+    //     mainMenu(input_file);
+    // }else
+    //     cout << "Impossibilitado de abrir o arquivo" << endl;
 
-    //Fechando arquivo de entrada
-    input_file.close();
+    // //Fechando arquivo de entrada
+    // input_file.close();
 
     return 0;
 
