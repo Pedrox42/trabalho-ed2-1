@@ -238,7 +238,8 @@ int main(int argc, char const *argv[]) {
 
     //Procura o ultimo caracter especificado
     string found = input_file.find_last_of(".")
-
+    
+    //Procura a substring seguinte ao caracter buscado
     if((input_file.substr(found+1))!="bin")
     {
         //Arquivo binario não encontrado, procurando arquivo csv para pré-tratamento
