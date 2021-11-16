@@ -3,6 +3,10 @@
 #include "Review.h"
 #include <string.h>
 
+
+const string csv_name = "tiktok_app_reviews.csv";
+const string bin_name = "tiktok_app_reviews.bin";
+
 int menu(){
     int selecao;
 
@@ -108,10 +112,10 @@ void strToReview(int* current, char* object, char* buffer, int objectSize){
     (*current)++;
 }
 
-Review* buildReview(char* buffer)
+Review* buildReview(char* buffer, int linesize)
 {
     char* id = new char[89];
-    char* review_text = new char[3500];
+    char* review_text = new char[linesize];
     char* upvotes = new char[10];
     char* app_version = new char[20];
     char* posted_date = new char[20];
@@ -121,7 +125,7 @@ Review* buildReview(char* buffer)
 
 
     strToData(&current, delimiter, id, buffer, 89);
-    strToReview(&current, review_text, buffer, 3500);
+    strToReview(&current, review_text, buffer, linesize);
     strToData(&current, delimiter, upvotes, buffer, 10);
     strToData(&current, delimiter, app_version, buffer, 20);
     strToData(&current, delimiter, posted_date, buffer, 20);
@@ -138,8 +142,12 @@ Review* buildReview(char* buffer)
 
     } catch (...){
         review = nullptr;
-        cout << "Erro de stoi: id da linha: " << id << endl;
+        cout << "Erro na linha de id: " << id << endl;
+        cout << "review: " << review_text << endl;
+        cout << "upvotes " << upvotes << endl;
     }
+
+   // cout << "Erro na linha de id: " << id << endl;
 
     delete [] id;
     delete [] review_text;
@@ -152,73 +160,91 @@ Review* buildReview(char* buffer)
 
 
 
-bool processar(ifstream& input_file){
+bool processar(ifstream& input_file, ofstream& bin_file){
 
     constexpr size_t bufferSize = 1024*1024*6; //equivalente a 5mb de memoria
-    int const linesize = 3500;
+    int const linesize = 5000;
     constexpr size_t readBufferSize = bufferSize - linesize;
     char* table_head = new char[100];
+    int review_array_size = 50000;
 
 
     input_file.getline(table_head, linesize, '\n');
     int counter = 0;
-    Review* review_list[100000];
 
 
     while (input_file)
     {
+        Review* review_list[review_array_size];
 
 
-        //criando buffer auxiliar
-        char* buffer = new char[bufferSize];
-        char* bufferAux = new char[linesize];
 
-        //criando buffer de leitura, buscando por tamanho setado
-        // e utilizando o getline para ir para a proxima linha
-        input_file.read(buffer, readBufferSize);
+            //criando buffer auxiliar
+            char *buffer = new char[bufferSize];
+            char *bufferAux = new char[linesize];
 
-        input_file.getline(bufferAux, linesize, '\n');
+            //criando buffer de leitura, buscando por tamanho setado
+            // e utilizando o getline para ir para a proxima linha
+            input_file.read(buffer, readBufferSize);
 
-        strcat(buffer, bufferAux);
+            input_file.getline(bufferAux, linesize, '\n');
 
-        int current = 0;
-        while(buffer[current] != '\n' && current < linesize){
+            strcat(buffer, bufferAux);
 
-            char* line = new char[linesize];
 
-            int i = 0;
-            int virgulas = 0;
-            bool entreAspas = false;
-            int newlines = 0;
-            for(i = 0; i < linesize; i++){
-                if(buffer[current] == ',' && !entreAspas ){
-                    virgulas++;
+
+            int current = 0;
+            while (buffer[current] != '\0') {
+
+                char *line = new char[linesize];
+
+                int i = 0;
+                int virgulas = 0;
+                bool entreAspas = false;
+                int newlines = 0;
+                for (i = 0; i < linesize; i++) {
+
+                    if(buffer[current] == '\0' && virgulas != 4){
+                        char *bufferFix = new char[linesize];
+                        input_file.getline(bufferFix, linesize, '\n');
+                        strcat(buffer, bufferFix);
+                        delete [] bufferFix;
+                    }
+
+                    if (buffer[current] == ',' && !entreAspas) {
+                        virgulas++;
+                    }
+
+                    if (buffer[current] == '"') {
+                        entreAspas = !entreAspas;
+                    }
+
+                    if (buffer[current] == '\n' && virgulas == 4) {
+                        break;
+                    } else if (buffer[current] == '\n') {
+                        buffer[current] = ' ';
+                    }
+
+                    line[i] = buffer[current];
+                    current++;
                 }
 
-                if(buffer[current] == '"'){
-                    entreAspas = !entreAspas;
-                }
-
-                if(buffer[current] == '\n' && virgulas == 4){
-                    break;
-                } else if(buffer[current] == '\n'){
-                    buffer[current] = ' ';
-                }
-
-                line[i] = buffer[current];
+                line[i] = '\0';
                 current++;
+
+//                review_list[counter] = buildReview(line);
+                buildReview(line, linesize);
+                counter++;
+
+
+                delete[] line;
             }
 
-            line[i] = '\0';
-            current++;
-            Review *review = buildReview(line);
-            counter++;
+            delete[] bufferAux;
+//        cout << "escrevendo no binario!" << endl;
+//        bin_file.write((char*) &review_list, review_array_size*sizeof(Review));
 
-            delete [] line;
-        }
-
-        delete [] bufferAux;
-
+        //cout << "buffer finalizado com total de reviews:" << counter << endl;
     }
 
     return true;
@@ -229,56 +255,84 @@ int main(int argc, char const *argv[]) {
     //Verifica se todos os parametros do programa foram entrados
     if (argc != 2)
     {
-        cout << "Erro! Esperado: ./<program_name> <input_file>" << endl;
+        cout << "Erro! Esperado: ./<program_name> <input_file_path>" << endl;
         return 1;
     }
 
-    string program_name(argv[0]);
-    string input_file_name(argv[1]);
-
-    //Procura o ultimo caracter especificado
-    string found = input_file.find_last_of(".")
-    
-    //Procura a substring seguinte ao caracter buscado
-    if((input_file.substr(found+1))!="bin")
+    ifstream input_file;
+    input_file.open(argv[1] + bin_name, ios::in);
+    if(input_file.is_open())
     {
-        //Arquivo binario não encontrado, procurando arquivo csv para pré-tratamento
-        if((input_file.substr(found+1))!="csv")
-        {
-            //Arquivo csv não encontrado
-            cout << "Erro! Esperado arquivo binário ou CSV." << endl;
-            return 1;
-        } else {
-            //Arquivo csv encontrado, abrindo arquivo de entrada
-            ifstream input_file;
-            input_file.open(argv[1], ios::in);
-
-            if(input_file.is_open())
-            {
-                // Pré-processamento do arquivo csv para binário
-                processar(input_file);
-                mainMenu(input_file);
-            }else
-                cout << "Impossibilitado de abrir o arquivo" << endl;
-
-            //Fechando arquivo de entrada
-            input_file.close();
-        }
-    } else{
-        //Arquivo binario encontrado, abrindo arquivo de entrada
-        ifstream input_file;
-        input_file.open(argv[1], ios::in);
-
+        cout << "Arquivo binario econtrado com sucesso!" << endl;
+        // Pré-processamento do arquivo csv para binário
+        mainMenu(input_file);
+    }else{
+        input_file.close();
+        cout << "Arquivo binario nao encontrado, procurando csv..." << endl;
+        input_file.open(argv[1] + csv_name, ios::in);
         if(input_file.is_open())
         {
-            mainMenu(input_file);
-        }else
-            cout << "Impossibilitado de abrir o arquivo" << endl;
+            cout << "Csv econtrado com sucesso!" << endl;
+            // Pré-processamento do arquivo csv para binário
 
-        //Fechando arquivo de entrada
-        input_file.close();
-        
+
+            ofstream bin_file;
+            bin_file.open(argv[1] + bin_name,  ios::binary | fstream::trunc);
+
+            processar(input_file, bin_file);
+
+            bin_file.close();
+
+            mainMenu(input_file);
+        }else{
+            input_file.close();
+            cout << "Impossibilitado de abrir o arquivo csv" << endl;
+            exit(1);
+        }
+
     }
+
+
+//    //Procura a substring seguinte ao caracter buscado
+//    if((input_file.substr(found+1))!="bin")
+//    {
+//        //Arquivo binario não encontrado, procurando arquivo csv para pré-tratamento
+//        if((input_file.substr(found+1))!="csv")
+//        {
+//            //Arquivo csv não encontrado
+//            cout << "Erro! Esperado arquivo binário ou CSV." << endl;
+//            return 1;
+//        } else {
+//            //Arquivo csv encontrado, abrindo arquivo de entrada
+//            ifstream input_file;
+//            input_file.open(argv[1], ios::in);
+//
+//            if(input_file.is_open())
+//            {
+//                // Pré-processamento do arquivo csv para binário
+//                processar(input_file);
+//                mainMenu(input_file);
+//            }else
+//                cout << "Impossibilitado de abrir o arquivo" << endl;
+//
+//            //Fechando arquivo de entrada
+//            input_file.close();
+//            }
+//    } else{
+//        //Arquivo binario encontrado, abrindo arquivo de entrada
+//        ifstream input_file;
+//        input_file.open(argv[1], ios::in);
+//
+//        if(input_file.is_open())
+//        {
+//            mainMenu(input_file);
+//        }else
+//            cout << "Impossibilitado de abrir o arquivo" << endl;
+//
+//        //Fechando arquivo de entrada
+//        input_file.close();
+//
+//    }
 
     // if(!(input_file_name.find(".csv") <= input_file_name.size()))
     // {
