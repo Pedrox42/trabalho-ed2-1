@@ -7,6 +7,10 @@
 const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
 
+
+
+
+
 int menu(){
     int selecao;
 
@@ -36,6 +40,33 @@ void selecionar(int selecao, ifstream& input_file){
         //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
         case 1:
         {
+//            input_file.seekg(0, ios::end);
+//            float total = input_file.tellg();
+//            float reviews = total/Review::getSizeOf();
+//            cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
+//
+//            input_file.seekg(0, ios::beg);
+//            float chosen = 0;
+//            cin >> chosen;
+//            if(chosen > 0 && chosen <= reviews){
+//                cout << "VALOR: " << (chosen-1) * Review::getSizeOf() << endl;
+//                input_file.seekg((chosen-1) * Review::getSizeOf(), ios::beg);
+//                Review* review = Review::desserializar_review(input_file);
+//                review->print();
+//            } else {
+//                cout << "Erro: Essa review nao existe!" << endl;
+//            }
+
+            input_file.seekg(0, ios::end);
+            float total = input_file.tellg();
+            float reviews = total/Review::getSizeOf();
+            input_file.seekg(0, ios::beg);
+            for(int i = 0; i < 100000; i++){
+                Review::desserializar_review(input_file)->print();
+                cout << endl << "parou no byte: " << input_file.tellg() << endl << endl;
+            }
+
+            exit(1);
 
         }
         //Note que a função testeImportacao() é apenas uma função de teste.
@@ -76,6 +107,7 @@ void strToData(int* current, char delimiter, char* object, char* buffer, int obj
         object[i] = buffer[*current];
         (*current)++;
     }
+
     object[i] = '\0';
 
     (*current)++;
@@ -91,6 +123,7 @@ void strToReview(int* current, char* object, char* buffer, int objectSize){
     if(buffer[*current] == '"'){
         check = true;
         delimiter = '\n';
+        (*current)++;
     }
 
     for(i = 0; i < objectSize && buffer[*current] != '\0' && buffer[*current] != '\n' && buffer[*current] != delimiter; i++){
@@ -104,7 +137,7 @@ void strToReview(int* current, char* object, char* buffer, int objectSize){
         (*current)++;
 
     }
-
+    object[i] = '\0';
     if(check){
         object[lastQuotationsObject] = '\0';
         (*current) = lastQuotations+1;
@@ -114,26 +147,21 @@ void strToReview(int* current, char* object, char* buffer, int objectSize){
 
 Review* buildReview(char* buffer, int linesize)
 {
-    char* id = new char[89];
+    char* id = new char[90];
     char* review_text = new char[linesize];
-    char* upvotes = new char[10];
-    char* app_version = new char[20];
-    char* posted_date = new char[20];
+    char* upvotes = new char[11];
+    char* app_version = new char[21];
+    char* posted_date = new char[21];
 
     char delimiter = ',';
     int current = 0;
 
 
-    strToData(&current, delimiter, id, buffer, 89);
+    strToData(&current, delimiter, id, buffer, 90);
     strToReview(&current, review_text, buffer, linesize);
-    strToData(&current, delimiter, upvotes, buffer, 10);
-    strToData(&current, delimiter, app_version, buffer, 20);
-    strToData(&current, delimiter, posted_date, buffer, 20);
-
-//    cout << "ERRO DE review_text: " << review_text << endl;
-//    cout << "ERRO DE upvotes: " << upvotes << endl;
-//    cout << "ERRO DE app_version: " << app_version << endl;
-//    cout << "ERRO DE posted_date: " << posted_date << endl;
+    strToData(&current, delimiter, upvotes, buffer, 11);
+    strToData(&current, delimiter, app_version, buffer, 21);
+    strToData(&current, delimiter, posted_date, buffer, 21);
 
     Review *review;
 
@@ -147,8 +175,6 @@ Review* buildReview(char* buffer, int linesize)
         cout << "upvotes " << upvotes << endl;
     }
 
-   // cout << "Erro na linha de id: " << id << endl;
-
     delete [] id;
     delete [] review_text;
     delete [] app_version;
@@ -158,15 +184,13 @@ Review* buildReview(char* buffer, int linesize)
     return review;
 }
 
-
-
 bool processar(ifstream& input_file, ofstream& bin_file){
 
-    constexpr size_t bufferSize = 1024*1024*6; //equivalente a 5mb de memoria
-    int const linesize = 5000;
+    constexpr size_t bufferSize = 1024*1024*50; //equivalente a 5mb de memoria
+    int const linesize = Review::review_size;
     constexpr size_t readBufferSize = bufferSize - linesize;
     char* table_head = new char[100];
-    int review_array_size = 1024*1024;
+    int review_array_size = 50000;
     Review* review_list = new Review[review_array_size];
 
 
@@ -228,45 +252,50 @@ bool processar(ifstream& input_file, ofstream& bin_file){
             }
 
             line[i] = '\0';
+
             current++;
-            review_list[counter].recieveReview(buildReview(line, linesize));
+            if(counter > 100000){
+                buildReview(line, linesize)->serializar_review(bin_file);
+
+            }
             counter++;
-
-            if(counter == review_array_size){
-                total_lines += counter;
-                cout << total_lines << " de Reviews processadas" << endl << "continuando processamento..." << endl;
-
-                for(int j = 0; j < counter; j++){
-                    bin_file.write((char*)(&review_list[j]), sizeof(review_list[j]));
-                }
-
-                bin_file.write((char*)&review_list, sizeof(review_list[0]));
-
-                delete [] review_list;
-                review_list = new Review[review_array_size];
-                counter = 0;
+            if(counter == 220000){
+                exit(1);
             }
 
 
             delete[] line;
+//
+//            if(counter == review_array_size){
+//
+//                total_lines += counter;
+//
+//                int counter2 = 0;
+//                for(int j = 0; j < counter; j++){
+//                    review_list[j].serializar_review(bin_file);
+//                    counter2++;
+//                }
+//
+//
+//                delete [] review_list;
+//                review_list = new Review[review_array_size];
+//                counter = 0;
+//
+//                cout << total_lines << " de Reviews processadas" << endl << "continuando processamento..." << endl;
+//            }
         }
 
-            delete[] bufferAux;
-
-
-        //cout << "buffer finalizado com total de reviews:" << counter << endl;
+        delete[] bufferAux;
     }
 
     total_lines += counter;
     cout << "Processamento finalizado! Total de Reviews analisadas: " << total_lines << endl;
 
     for(int j = 0; j < counter; j++){
-        bin_file.write((char*)(&review_list[j]), sizeof(review_list[j]));
+        review_list[j].serializar_review(bin_file);
     }
 
-
     delete [] review_list;
-    review_list = new Review[review_array_size];
 
     return true;
 }
@@ -297,14 +326,24 @@ int main(int argc, char const *argv[]) {
             // Pré-processamento do arquivo csv para binário
 
 
-            ofstream bin_file;
-            bin_file.open(argv[1] + bin_name,  ios::binary | fstream::trunc);
+            ofstream write_bin_file;
+            write_bin_file.open(argv[1] + bin_name,  ios::binary);
 
-            processar(input_file, bin_file);
+            Review* review = new Review();
+            processar(input_file, write_bin_file);
+            write_bin_file.close();
 
-            bin_file.close();
 
-            mainMenu(input_file);
+            ifstream read_bin_file;
+            read_bin_file.open(argv[1] + bin_name, ios::binary);
+
+            if(read_bin_file.is_open()) {
+                mainMenu(read_bin_file);
+            } else{
+                cout << "Impossibilitado de abrir o arquivo binario" << endl;
+                exit(1);
+            }
+
         }else{
             input_file.close();
             cout << "Impossibilitado de abrir o arquivo csv" << endl;
@@ -313,72 +352,6 @@ int main(int argc, char const *argv[]) {
 
     }
 
-
-//    //Procura a substring seguinte ao caracter buscado
-//    if((input_file.substr(found+1))!="bin")
-//    {
-//        //Arquivo binario não encontrado, procurando arquivo csv para pré-tratamento
-//        if((input_file.substr(found+1))!="csv")
-//        {
-//            //Arquivo csv não encontrado
-//            cout << "Erro! Esperado arquivo binário ou CSV." << endl;
-//            return 1;
-//        } else {
-//            //Arquivo csv encontrado, abrindo arquivo de entrada
-//            ifstream input_file;
-//            input_file.open(argv[1], ios::in);
-//
-//            if(input_file.is_open())
-//            {
-//                // Pré-processamento do arquivo csv para binário
-//                processar(input_file);
-//                mainMenu(input_file);
-//            }else
-//                cout << "Impossibilitado de abrir o arquivo" << endl;
-//
-//            //Fechando arquivo de entrada
-//            input_file.close();
-//            }
-//    } else{
-//        //Arquivo binario encontrado, abrindo arquivo de entrada
-//        ifstream input_file;
-//        input_file.open(argv[1], ios::in);
-//
-//        if(input_file.is_open())
-//        {
-//            mainMenu(input_file);
-//        }else
-//            cout << "Impossibilitado de abrir o arquivo" << endl;
-//
-//        //Fechando arquivo de entrada
-//        input_file.close();
-//
-//    }
-
-    // if(!(input_file_name.find(".csv") <= input_file_name.size()))
-    // {
-    //     cout << "Erro! Esperado arquivo CSV." << endl;
-    //     return 1;
-    // }
-
-    //Abrindo arquivo de entrada
-    // ifstream input_file;
-    // input_file.open(argv[1], ios::in);
-
-    // if(input_file.is_open())
-    // {
-    //     processar(input_file);
-    //     mainMenu(input_file);
-    // }else
-    //     cout << "Impossibilitado de abrir o arquivo" << endl;
-
-    // //Fechando arquivo de entrada
-    // input_file.close();
-
     return 0;
 
-    //Review* review = new Review("1234abcd", "Muito legal tiktok", "3.2", "22/10/2021", 30);
-
-
-    //return 0;
 }
