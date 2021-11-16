@@ -40,30 +40,21 @@ void selecionar(int selecao, ifstream& input_file){
         //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
         case 1:
         {
-//            input_file.seekg(0, ios::end);
-//            float total = input_file.tellg();
-//            float reviews = total/Review::getSizeOf();
-//            cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
-//
-//            input_file.seekg(0, ios::beg);
-//            float chosen = 0;
-//            cin >> chosen;
-//            if(chosen > 0 && chosen <= reviews){
-//                cout << "VALOR: " << (chosen-1) * Review::getSizeOf() << endl;
-//                input_file.seekg((chosen-1) * Review::getSizeOf(), ios::beg);
-//                Review* review = Review::desserializar_review(input_file);
-//                review->print();
-//            } else {
-//                cout << "Erro: Essa review nao existe!" << endl;
-//            }
-
             input_file.seekg(0, ios::end);
             float total = input_file.tellg();
             float reviews = total/Review::getSizeOf();
+            cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
+
             input_file.seekg(0, ios::beg);
-            for(int i = 0; i < 100000; i++){
-                Review::desserializar_review(input_file)->print();
-                cout << endl << "parou no byte: " << input_file.tellg() << endl << endl;
+            float chosen = 0;
+            cin >> chosen;
+            if(chosen > 0 && chosen <= reviews){
+                cout << "VALOR: " << (chosen-1) * Review::getSizeOf() << endl;
+                input_file.seekg((chosen-1) * Review::getSizeOf(), ios::beg);
+                Review* review = Review::desserializar_review(input_file);
+                review->print();
+            } else {
+                cout << "Erro: Essa review nao existe!" << endl;
             }
 
             exit(1);
