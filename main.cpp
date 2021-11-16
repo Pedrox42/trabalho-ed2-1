@@ -166,86 +166,107 @@ bool processar(ifstream& input_file, ofstream& bin_file){
     int const linesize = 5000;
     constexpr size_t readBufferSize = bufferSize - linesize;
     char* table_head = new char[100];
-    int review_array_size = 50000;
+    int review_array_size = 1024*1024;
+    Review* review_list = new Review[review_array_size];
 
 
     input_file.getline(table_head, linesize, '\n');
     int counter = 0;
+    int total_lines = 0;
 
+    cout << "Iniciando processamento: " << endl;
 
     while (input_file)
     {
-        Review* review_list[review_array_size];
+        char *buffer = new char[bufferSize];
+        char *bufferAux = new char[linesize];
+
+        //criando buffer de leitura, buscando por tamanho setado
+        // e utilizando o getline para ir para a proxima linha
+        input_file.read(buffer, readBufferSize);
+
+        input_file.getline(bufferAux, linesize, '\n');
+
+        strcat(buffer, bufferAux);
 
 
 
-            //criando buffer auxiliar
-            char *buffer = new char[bufferSize];
-            char *bufferAux = new char[linesize];
+        int current = 0;
+        while (buffer[current] != '\0') {
 
-            //criando buffer de leitura, buscando por tamanho setado
-            // e utilizando o getline para ir para a proxima linha
-            input_file.read(buffer, readBufferSize);
+            char *line = new char[linesize];
 
-            input_file.getline(bufferAux, linesize, '\n');
+            int i = 0;
+            int virgulas = 0;
+            bool entreAspas = false;
+            int newlines = 0;
+            for (i = 0; i < linesize; i++) {
 
-            strcat(buffer, bufferAux);
-
-
-
-            int current = 0;
-            while (buffer[current] != '\0') {
-
-                char *line = new char[linesize];
-
-                int i = 0;
-                int virgulas = 0;
-                bool entreAspas = false;
-                int newlines = 0;
-                for (i = 0; i < linesize; i++) {
-
-                    if(buffer[current] == '\0' && virgulas != 4){
-                        char *bufferFix = new char[linesize];
-                        input_file.getline(bufferFix, linesize, '\n');
-                        strcat(buffer, bufferFix);
-                        delete [] bufferFix;
-                    }
-
-                    if (buffer[current] == ',' && !entreAspas) {
-                        virgulas++;
-                    }
-
-                    if (buffer[current] == '"') {
-                        entreAspas = !entreAspas;
-                    }
-
-                    if (buffer[current] == '\n' && virgulas == 4) {
-                        break;
-                    } else if (buffer[current] == '\n') {
-                        buffer[current] = ' ';
-                    }
-
-                    line[i] = buffer[current];
-                    current++;
+                if(buffer[current] == '\0' && virgulas != 4){
+                    char *bufferFix = new char[linesize];
+                    input_file.getline(bufferFix, linesize, '\n');
+                    strcat(buffer, bufferFix);
+                    delete [] bufferFix;
                 }
 
-                line[i] = '\0';
+                if (buffer[current] == ',' && !entreAspas) {
+                    virgulas++;
+                }
+
+                if (buffer[current] == '"') {
+                    entreAspas = !entreAspas;
+                }
+
+                if (buffer[current] == '\n' && virgulas == 4) {
+                    break;
+                } else if (buffer[current] == '\n') {
+                    buffer[current] = ' ';
+                }
+
+                line[i] = buffer[current];
                 current++;
-
-//                review_list[counter] = buildReview(line);
-                buildReview(line, linesize);
-                counter++;
-
-
-                delete[] line;
             }
 
+            line[i] = '\0';
+            current++;
+            review_list[counter].recieveReview(buildReview(line, linesize));
+            counter++;
+
+            if(counter == review_array_size){
+                total_lines += counter;
+                cout << total_lines << " de Reviews processadas" << endl << "continuando processamento..." << endl;
+
+                for(int j = 0; j < counter; j++){
+                    bin_file.write((char*)(&review_list[j]), sizeof(review_list[j]));
+                }
+
+                bin_file.write((char*)&review_list, sizeof(review_list[0]));
+
+                delete [] review_list;
+                review_list = new Review[review_array_size];
+                counter = 0;
+            }
+
+
+            delete[] line;
+        }
+
             delete[] bufferAux;
-//        cout << "escrevendo no binario!" << endl;
-//        bin_file.write((char*) &review_list, review_array_size*sizeof(Review));
+
 
         //cout << "buffer finalizado com total de reviews:" << counter << endl;
     }
+
+    total_lines += counter;
+    cout << "Processamento finalizado! Total de Reviews analisadas: " << total_lines << endl;
+
+    for(int j = 0; j < counter; j++){
+        bin_file.write((char*)(&review_list[j]), sizeof(review_list[j]));
+    }
+
+
+    delete [] review_list;
+    review_list = new Review[review_array_size];
 
     return true;
 }

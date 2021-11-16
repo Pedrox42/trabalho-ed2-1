@@ -14,6 +14,15 @@ Review::Review(){}
 Review::~Review(){
 }
 
+void Review::recieveReview(Review* review){
+    this->review_id = review->review_id;
+    this->review_text = review->review_text;
+    this->app_version = review->app_version;
+    this->posted_date = review->posted_date;
+    this->upvotes = review->upvotes;
+
+}
+
 const string &Review::getReviewId() const {
     return review_id;
 }

@@ -45,6 +45,8 @@ public:
 
     void print();
 
+    void recieveReview(Review* review);
+
 };
 
 
