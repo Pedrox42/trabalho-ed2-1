@@ -65,8 +65,9 @@ void Review::setUpvotes(int upvotes) {
     Review::upvotes = upvotes;
 }
 
-int Review::getSizeOf(){
-    return (sizeof(char) * (id_size + review_size + version_size + date_size)) + sizeof(int) + 16;
+int Review::getSizeOf() {
+    //return (sizeof(char) * (id_size + review_size + version_size + date_size)) + (5*sizeof(int));
+    return (sizeof(char) * (id_size));
 }
 
 void Review::print(){
@@ -89,7 +90,7 @@ void Review::serializar_char(ofstream& bin_file, char* str, int size){
 
     serialized_char[counter] = '\0';
 
-    bin_file.write((char*)&size, sizeof(int));
+    //in_file.write((char*)&size, sizeof(int));
     bin_file.write((char*)serialized_char, size*sizeof(char));
 }
 
@@ -101,9 +102,9 @@ void Review::serializar_int(ofstream& bin_file, int value){
 char* Review::desserializar_char(ifstream& bin_file){
     char* str;
     int size;
-    bin_file.read((char*)&size, sizeof(int));
-    str = new char[size];
-    bin_file.read((char*)str, size*sizeof(char));
+//    bin_file.read((char*)&size, sizeof(int));
+    str = new char[90];
+    bin_file.read((char*)str, 90*sizeof(char));
 
     return str;
 }
@@ -120,29 +121,29 @@ void Review::serializar_review(ofstream& bin_file){
     strcpy(id, this->getReviewId().c_str());
     serializar_char(bin_file, id, id_size);
 
-    char * review_text = new char [this->getReviewText().length()+1];
-    strcpy(review_text, this->getReviewText().c_str());
-    serializar_char(bin_file, review_text, review_size);
-
-    Review::serializar_int(bin_file, this->getUpvotes());
-
-    char * app_version = new char [this->getAppVersion().length()+1];
-    strcpy(app_version, this->getAppVersion().c_str());
-    serializar_char(bin_file, app_version, version_size);
-
-    char * posted_date = new char [this->getPostedDate().length()+1];
-    strcpy(posted_date, this->getPostedDate().c_str());
-    serializar_char(bin_file, posted_date, date_size);
+//    char * review_text = new char [this->getReviewText().length()+1];
+//    strcpy(review_text, this->getReviewText().c_str());
+//    serializar_char(bin_file, review_text, review_size);
+//
+//    Review::serializar_int(bin_file, this->getUpvotes());
+//
+//    char * app_version = new char [this->getAppVersion().length()+1];
+//    strcpy(app_version, this->getAppVersion().c_str());
+//    serializar_char(bin_file, app_version, version_size);
+//
+//    char * posted_date = new char [this->getPostedDate().length()+1];
+//    strcpy(posted_date, this->getPostedDate().c_str());
+//    serializar_char(bin_file, posted_date, date_size);
 
 }
 
 Review* Review::desserializar_review(ifstream& bin_file){
     Review* review = new Review();
     review->setReviewId(desserializar_char(bin_file));
-    review->setReviewText(desserializar_char(bin_file));
-    review->setUpvotes(desserializar_int(bin_file));
-    review->setAppVersion(desserializar_char(bin_file));
-    review->setPostedDate(desserializar_char(bin_file));
+//    review->setReviewText(desserializar_char(bin_file));
+//    review->setUpvotes(desserializar_int(bin_file));
+//    review->setAppVersion(desserializar_char(bin_file));
+//    review->setPostedDate(desserializar_char(bin_file));
 
     return review;
 }

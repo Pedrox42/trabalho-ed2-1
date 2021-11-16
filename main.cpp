@@ -41,12 +41,12 @@ void selecionar(int selecao, ifstream& input_file){
         case 1:
         {
             input_file.seekg(0, ios::end);
-            float total = input_file.tellg();
-            float reviews = total/Review::getSizeOf();
+            double total = input_file.tellg();
+            double reviews = total/Review::getSizeOf();
             cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
 
             input_file.seekg(0, ios::beg);
-            float chosen = 0;
+            double chosen = 0;
             cin >> chosen;
             if(chosen > 0 && chosen <= reviews){
                 cout << "VALOR: " << (chosen-1) * Review::getSizeOf() << endl;
@@ -245,21 +245,16 @@ bool processar(ifstream& input_file, ofstream& bin_file){
             line[i] = '\0';
 
             current++;
-            if(counter > 100000){
-                buildReview(line, linesize)->serializar_review(bin_file);
+            buildReview(line, linesize)->serializar_review(bin_file);
 
-            }
             counter++;
-            if(counter == 220000){
-                exit(1);
-            }
 
 
             delete[] line;
 //
-//            if(counter == review_array_size){
-//
-//                total_lines += counter;
+            if(counter == review_array_size){
+
+                total_lines += counter;
 //
 //                int counter2 = 0;
 //                for(int j = 0; j < counter; j++){
@@ -270,10 +265,10 @@ bool processar(ifstream& input_file, ofstream& bin_file){
 //
 //                delete [] review_list;
 //                review_list = new Review[review_array_size];
-//                counter = 0;
-//
-//                cout << total_lines << " de Reviews processadas" << endl << "continuando processamento..." << endl;
-//            }
+                counter = 0;
+
+                cout << total_lines << " de Reviews processadas" << endl << "continuando processamento..." << endl;
+            }
         }
 
         delete[] bufferAux;
