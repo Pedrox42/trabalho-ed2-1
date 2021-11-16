@@ -102,11 +102,21 @@ void Review::serializar_int(ofstream& bin_file, int value){
 char* Review::desserializar_char(ifstream& bin_file){
     char* str;
     int size;
-   bin_file.read((char*)&size, sizeof(int));
+    bin_file.read((char*)&size, sizeof(int));
     str = new char[size];
     bin_file.read((char*)str, size*sizeof(char));
 
     return str;
+}
+
+int Review::desserializar_char_size(ifstream& bin_file){
+    int size;
+    char* str;
+    bin_file.read((char*)&size, sizeof(int));
+    str = new char[size];
+    bin_file.read((char*)str, size*sizeof(char));
+
+    return size;
 }
 
 int Review::desserializar_int(ifstream& bin_file){
@@ -146,5 +156,16 @@ Review* Review::desserializar_review(ifstream& bin_file){
     review->setPostedDate(desserializar_char(bin_file));
 
     return review;
+}
+
+int Review::desserializar_review_size(ifstream& bin_file){
+    int total = 0;
+    total += Review::desserializar_char_size(bin_file);
+    total += Review::desserializar_char_size(bin_file);
+    desserializar_int(bin_file);
+    total += Review::desserializar_char_size(bin_file);
+    total += Review::desserializar_char_size(bin_file);
+
+    return total;
 }
 

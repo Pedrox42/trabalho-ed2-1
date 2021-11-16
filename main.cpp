@@ -6,7 +6,7 @@
 
 const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
-
+const string index_name = "index.bin";
 
 
 
@@ -40,6 +40,7 @@ void selecionar(int selecao, ifstream& input_file){
         //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
         case 1:
         {
+
             input_file.seekg(0, ios::end);
             double total = input_file.tellg();
             double reviews = total/Review::getSizeOf();
@@ -175,7 +176,7 @@ Review* buildReview(char* buffer, int linesize)
     return review;
 }
 
-bool processar(ifstream& input_file, ofstream& bin_file){
+int processar(ifstream& input_file, ofstream& bin_file){
 
     constexpr size_t bufferSize = 1024*1024*50; //equivalente a 5mb de memoria
     int const linesize = Review::review_size;
@@ -272,6 +273,10 @@ bool processar(ifstream& input_file, ofstream& bin_file){
         }
 
         delete[] bufferAux;
+
+        if(total_lines >= 200000){
+            break;
+        }
     }
 
     total_lines += counter;
@@ -283,7 +288,31 @@ bool processar(ifstream& input_file, ofstream& bin_file){
 
     delete [] review_list;
 
-    return true;
+    return total_lines;
+}
+
+bool processar_bin(ifstream& bin_file, ofstream& index_file, int total_reviews){
+    int total_char = 0;
+
+    cout << "Fazendo ajustes finais..." << endl;
+    Review::serializar_int(index_file, total_reviews);
+    int counter = 0;
+    int total = 0;
+    while (bin_file)
+    {
+        total_char += Review::desserializar_review_size(bin_file);
+        Review::serializar_int(index_file, total_char);
+        counter++;
+
+        if(counter == 100000){
+            total += counter;
+            cout << "Finalizando processamento de " << total << endl;
+            counter = 0;
+        }
+
+    }
+    cout << "total de caracteres: " << total_char << endl;
+
 }
 
 int main(int argc, char const *argv[]) {
@@ -296,7 +325,9 @@ int main(int argc, char const *argv[]) {
     }
 
     ifstream input_file;
-    input_file.open(argv[1] + bin_name, ios::in);
+//    ifstream index;
+    input_file.open(argv[1] + bin_name, ios::binary);
+//    input_file.open(argv[1] + index_name, ios::binary);
     if(input_file.is_open())
     {
         cout << "Arquivo binario econtrado com sucesso!" << endl;
@@ -313,22 +344,21 @@ int main(int argc, char const *argv[]) {
 
 
             ofstream write_bin_file;
-            write_bin_file.open(argv[1] + bin_name,  ios::binary);
+            write_bin_file.open(argv[1] + bin_name,  ios::binary | ios::trunc);
 
-            Review* review = new Review();
-            processar(input_file, write_bin_file);
+            int total_reviews = processar(input_file, write_bin_file);
             write_bin_file.close();
 
+            ofstream write_index_file;
+            write_bin_file.open(argv[1] + index_name,  ios::binary | ios::trunc);
+            processar_bin(input_file, write_bin_file, total_reviews);
+            write_bin_file.close();
 
-            ifstream read_bin_file;
-            read_bin_file.open(argv[1] + bin_name, ios::binary);
+            input_file.close();
+            input_file.clear();
+            input_file.open(argv[1] + bin_name, ios::binary);
 
-            if(read_bin_file.is_open()) {
-                mainMenu(read_bin_file);
-            } else{
-                cout << "Impossibilitado de abrir o arquivo binario" << endl;
-                exit(1);
-            }
+            mainMenu(input_file);
 
         }else{
             input_file.close();

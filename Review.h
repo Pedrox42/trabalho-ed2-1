@@ -67,6 +67,10 @@ public:
     static int getSizeOf();
 
     static void serializar_int(ofstream &bin_file, int value);
+
+    static int desserializar_char_size(ifstream &bin_file);
+
+    static int desserializar_review_size(ifstream &bin_file);
 };
 
 
