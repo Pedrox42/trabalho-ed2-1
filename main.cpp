@@ -21,8 +21,7 @@ int menu(){
     cout << "MENU" << endl;
     cout << "----" << endl;
     cout << "[1] acessaRegistro(i)" << endl;
-    cout << "[2] importaRegistro(n)" << endl;
-    cout << "[3] testeImportacao()" << endl;
+    cout << "[2] testeImportacao()" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -109,13 +108,6 @@ void selecionar(int selecao, ifstream& input_file, string path){
             } else{
                 cout << "resposta invalida!" << endl;
             }
-        }
-        //importa N registros aleatórios do arquivo binário. Para essa importação, a função deve perguntar ao usuário
-        // se ele deseja exibir a saída no console ou salvá-la em um arquivo. Se a opção for a saída em console, deve-se utilizar N = 10.
-        // Para a saída em arquivo, utilize N = 100
-        case 3:
-        {
-
         }
     }
 }
