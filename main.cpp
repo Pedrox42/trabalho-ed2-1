@@ -2,10 +2,14 @@
 #include <fstream>
 #include "Review.h"
 #include <string.h>
+#include <ctime>
+#include <cmath>
 
 
 const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
+
+
 
 
 
@@ -26,7 +30,7 @@ int menu(){
     return selecao;
 }
 
-void selecionar(int selecao, ifstream& input_file){
+void selecionar(int selecao, ifstream& input_file, string path){
 
     switch (selecao)
     {
@@ -57,14 +61,54 @@ void selecionar(int selecao, ifstream& input_file){
                 cout << "Erro: Essa review nao existe!" << endl;
             }
 
-            exit(1);
-
         }
         //Note que a função testeImportacao() é apenas uma função de teste.
         // O programa deve ser capaz de importar registros do arquivo para quaisquer valores de N, sem erros e sem gerar exceções.
         case 2:
         {
+            input_file.seekg(0, ios::end);
+            double total = input_file.tellg();
+            double reviews = total/Review::getSizeOf();
 
+            cout << "escolha uma das opcoes: " << endl;
+            cout << "[1] 10 reviews aleatorias sejam apresentadas no console" << endl;
+            cout << "[2] 100 reviews sejam salvas para o arquvio output.txt" << endl;
+            cout << "Reviews: " << reviews << endl;
+            int resposta;
+            int n = 0;
+            cin >> resposta;
+            if(resposta == 1){
+                n = 10;
+                for(int i = 0; i < n; i++) {
+                    int random = rand();
+                    double option = (random + int(random / reviews) * reviews);
+                    input_file.seekg(option * Review::getSizeOf(), ios::beg);
+                    Review *review = Review::desserializar_review(input_file);
+                    cout << "Review: " << option << endl;
+                    review->print();
+                }
+
+            } else if(resposta == 2) {
+                n = 100;
+                ofstream txt_file;
+                txt_file.open((path + "output.txt"), ios::out | ios::trunc);
+
+                for(int i = 0; i < n; i++){
+                    int random = rand();
+                    double option = (random + int(random/reviews) * reviews);
+                    input_file.seekg( option * Review::getSizeOf(), ios::beg);
+                    Review* review = Review::desserializar_review(input_file);
+                    txt_file << "Review: " << option << endl;
+                    txt_file << "Id: " << review->getReviewId() << endl;
+                    txt_file <<  "App Version: " << review->getAppVersion() << endl;
+                    txt_file <<  "Data de postagem: " << review->getPostedDate() << endl;
+                    txt_file <<  "Texto: " << review->getReviewText() << endl;
+                    txt_file <<  "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
+                }
+                txt_file.close();
+            } else{
+                cout << "resposta invalida!" << endl;
+            }
         }
         //importa N registros aleatórios do arquivo binário. Para essa importação, a função deve perguntar ao usuário
         // se ele deseja exibir a saída no console ou salvá-la em um arquivo. Se a opção for a saída em console, deve-se utilizar N = 10.
@@ -76,7 +120,7 @@ void selecionar(int selecao, ifstream& input_file){
     }
 }
 
-int mainMenu(ifstream& input_file){
+int mainMenu(ifstream& input_file, string path){
     int selecao = 1;
 
     while(selecao != 0)
@@ -84,7 +128,7 @@ int mainMenu(ifstream& input_file){
         //system("cls");
         selecao = menu();
 
-        selecionar(selecao, input_file);
+        selecionar(selecao, input_file, path);
 
 
     }
@@ -177,11 +221,11 @@ Review* buildReview(char* buffer, int linesize)
 
 bool processar(ifstream& input_file, ofstream& bin_file){
 
-    constexpr size_t bufferSize = 1024*1024*50; //equivalente a 5mb de memoria
+    constexpr size_t bufferSize = 1024*1024*10; //equivalente a 5mb de memoria
     int const linesize = Review::review_size;
     constexpr size_t readBufferSize = bufferSize - linesize;
     char* table_head = new char[100];
-    int review_array_size = 50000;
+    int review_array_size = 100000;
     Review* review_list = new Review[review_array_size];
 
 
@@ -287,7 +331,7 @@ bool processar(ifstream& input_file, ofstream& bin_file){
 }
 
 int main(int argc, char const *argv[]) {
-
+    srand ( time(NULL) );
     //Verifica se todos os parametros do programa foram entrados
     if (argc != 2)
     {
@@ -301,7 +345,7 @@ int main(int argc, char const *argv[]) {
     {
         cout << "Arquivo binario econtrado com sucesso!" << endl;
         // Pré-processamento do arquivo csv para binário
-        mainMenu(input_file);
+        mainMenu(input_file, argv[1]);
     }else{
         input_file.close();
         cout << "Arquivo binario nao encontrado, procurando csv..." << endl;
@@ -324,7 +368,7 @@ int main(int argc, char const *argv[]) {
             read_bin_file.open(argv[1] + bin_name, ios::binary);
 
             if(read_bin_file.is_open()) {
-                mainMenu(read_bin_file);
+                mainMenu(read_bin_file, argv[1]);
             } else{
                 cout << "Impossibilitado de abrir o arquivo binario" << endl;
                 exit(1);
