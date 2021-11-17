@@ -65,8 +65,8 @@ void Review::setUpvotes(int upvotes) {
     Review::upvotes = upvotes;
 }
 
-int Review::getSizeOf() {
-    return (sizeof(char) * (id_size + review_size + version_size + date_size)) + (5*sizeof(int));
+int Review::getSizeOf(int review_characters) {
+    return (sizeof(char) * (id_size + review_characters + version_size + date_size)) + (5*sizeof(int));
     //return (sizeof(char) * (id_size+review_size)) + (2*sizeof(int));
 }
 
@@ -94,6 +94,17 @@ void Review::serializar_char(ofstream& bin_file, char* str, int size){
     bin_file.write((char*)serialized_char, size*sizeof(char));
 }
 
+void Review::serializar_review(ofstream& bin_file, char* str){
+    int size = 0;
+
+    for(int i = 0; str[i] != '\0'; i++){
+        size++;
+    }
+
+    bin_file.write((char*)&size, sizeof(int));
+    bin_file.write((char*)str, size*sizeof(char));
+}
+
 
 void Review::serializar_int(ofstream& bin_file, int value){
     bin_file.write((char*)&value, sizeof(int));
@@ -102,7 +113,7 @@ void Review::serializar_int(ofstream& bin_file, int value){
 char* Review::desserializar_char(ifstream& bin_file){
     char* str;
     int size;
-   bin_file.read((char*)&size, sizeof(int));
+    bin_file.read((char*)&size, sizeof(int));
     str = new char[size];
     bin_file.read((char*)str, size*sizeof(char));
 
@@ -123,7 +134,7 @@ void Review::serializar_review(ofstream& bin_file){
 
     char * review_text = new char [this->getReviewText().length()+1];
     strcpy(review_text, this->getReviewText().c_str());
-    serializar_char(bin_file, review_text, review_size);
+    serializar_review(bin_file, review_text);
 
     Review::serializar_int(bin_file, this->getUpvotes());
 

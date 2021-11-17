@@ -8,7 +8,7 @@
 
 const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
-
+const string index_name = "index.bin";
 
 
 
@@ -29,7 +29,7 @@ int menu(){
     return selecao;
 }
 
-void selecionar(int selecao, ifstream& input_file, string path){
+void selecionar(int selecao, ifstream* files, string path){
 
     switch (selecao)
     {
@@ -43,18 +43,31 @@ void selecionar(int selecao, ifstream& input_file, string path){
         //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
         case 1:
         {
-            input_file.seekg(0, ios::end);
-            double total = input_file.tellg();
-            double reviews = total/Review::getSizeOf();
+            //binario no incio
+            files[0].seekg(0, ios::beg);
+
+            //index no fim
+            files[1].seekg(0, ios::end);
+            int size = files[1].tellg();
+            files[1].seekg(0, ios::beg);
+
+            int reviews = size/sizeof(int);
+
             cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
 
-            input_file.seekg(0, ios::beg);
+
             double chosen = 0;
             cin >> chosen;
             if(chosen > 0 && chosen <= reviews){
-                cout << "VALOR: " << (chosen-1) * Review::getSizeOf() << endl;
-                input_file.seekg((chosen-1) * Review::getSizeOf(), ios::beg);
-                Review* review = Review::desserializar_review(input_file);
+                files[1].seekg((chosen-1) * sizeof(int), ios::beg);
+                int char_total = Review::desserializar_int(files[1]);
+                cout << "char total: " << char_total << endl;
+                double peso = ( char_total*sizeof(char) ) + ( (chosen-1) * Review::getSizeOf(0) );
+                cout << "peso total: " << peso << endl;
+                files[0].seekg(peso, ios::beg);
+                Review* review = Review::desserializar_review(files[0]);
+
+                cout << "pedo de uma review sem reviewtext: " << Review::getSizeOf(0) << endl;
                 review->print();
             } else {
                 cout << "Erro: Essa review nao existe!" << endl;
@@ -63,56 +76,56 @@ void selecionar(int selecao, ifstream& input_file, string path){
         }
         //Note que a função testeImportacao() é apenas uma função de teste.
         // O programa deve ser capaz de importar registros do arquivo para quaisquer valores de N, sem erros e sem gerar exceções.
-        case 2:
-        {
-            input_file.seekg(0, ios::end);
-            double total = input_file.tellg();
-            double reviews = total/Review::getSizeOf();
-
-            cout << "escolha uma das opcoes: " << endl;
-            cout << "[1] 10 reviews aleatorias sejam apresentadas no console" << endl;
-            cout << "[2] 100 reviews sejam salvas para o arquvio output.txt" << endl;
-            cout << "Reviews: " << reviews << endl;
-            int resposta;
-            int n = 0;
-            cin >> resposta;
-            if(resposta == 1){
-                n = 10;
-                for(int i = 0; i < n; i++) {
-                    int random = rand();
-                    double option = (random + int(random / reviews) * reviews);
-                    input_file.seekg(option * Review::getSizeOf(), ios::beg);
-                    Review *review = Review::desserializar_review(input_file);
-                    cout << "Review: " << option << endl;
-                    review->print();
-                }
-
-            } else if(resposta == 2) {
-                n = 100;
-                ofstream txt_file;
-                txt_file.open((path + "output.txt"), ios::out | ios::trunc);
-
-                for(int i = 0; i < n; i++){
-                    int random = rand();
-                    double option = (random + int(random/reviews) * reviews);
-                    input_file.seekg( option * Review::getSizeOf(), ios::beg);
-                    Review* review = Review::desserializar_review(input_file);
-                    txt_file << "Review: " << option << endl;
-                    txt_file << "Id: " << review->getReviewId() << endl;
-                    txt_file <<  "App Version: " << review->getAppVersion() << endl;
-                    txt_file <<  "Data de postagem: " << review->getPostedDate() << endl;
-                    txt_file <<  "Texto: " << review->getReviewText() << endl;
-                    txt_file <<  "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
-                }
-                txt_file.close();
-            } else{
-                cout << "resposta invalida!" << endl;
-            }
-        }
+//        case 2:
+//        {
+//            input_file.seekg(0, ios::end);
+//            double total = input_file.tellg();
+//            double reviews = total/Review::getSizeOf();
+//
+//            cout << "escolha uma das opcoes: " << endl;
+//            cout << "[1] 10 reviews aleatorias sejam apresentadas no console" << endl;
+//            cout << "[2] 100 reviews sejam salvas para o arquvio output.txt" << endl;
+//            cout << "Reviews: " << reviews << endl;
+//            int resposta;
+//            int n = 0;
+//            cin >> resposta;
+//            if(resposta == 1){
+//                n = 10;
+//                for(int i = 0; i < n; i++) {
+//                    int random = rand();
+//                    double option = (random + int(random / reviews) * reviews);
+//                    input_file.seekg(option * Review::getSizeOf(), ios::beg);
+//                    Review *review = Review::desserializar_review(input_file);
+//                    cout << "Review: " << option << endl;
+//                    review->print();
+//                }
+//
+//            } else if(resposta == 2) {
+//                n = 100;
+//                ofstream txt_file;
+//                txt_file.open((path + "output.txt"), ios::out | ios::trunc);
+//
+//                for(int i = 0; i < n; i++){
+//                    int random = rand();
+//                    double option = (random + int(random/reviews) * reviews);
+//                    input_file.seekg( option * Review::getSizeOf(), ios::beg);
+//                    Review* review = Review::desserializar_review(input_file);
+//                    txt_file << "Review: " << option << endl;
+//                    txt_file << "Id: " << review->getReviewId() << endl;
+//                    txt_file <<  "App Version: " << review->getAppVersion() << endl;
+//                    txt_file <<  "Data de postagem: " << review->getPostedDate() << endl;
+//                    txt_file <<  "Texto: " << review->getReviewText() << endl;
+//                    txt_file <<  "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
+//                }
+//                txt_file.close();
+//            } else{
+//                cout << "resposta invalida!" << endl;
+//            }
+//        }
     }
 }
 
-int mainMenu(ifstream& input_file, string path){
+int mainMenu(ifstream* files, string path){
     int selecao = 1;
 
     while(selecao != 0)
@@ -120,7 +133,7 @@ int mainMenu(ifstream& input_file, string path){
         //system("cls");
         selecao = menu();
 
-        selecionar(selecao, input_file, path);
+        selecionar(selecao, files, path);
 
 
     }
@@ -140,7 +153,7 @@ void strToData(int* current, char delimiter, char* object, char* buffer, int obj
     (*current)++;
 }
 
-void strToReview(int* current, char* object, char* buffer, int objectSize){
+void strToReview(int* current, char* object, char* buffer, int objectSize, int* char_counter){
     int i = 0;
     int lastQuotations = *current;
     int lastQuotationsObject = 0;
@@ -159,20 +172,25 @@ void strToReview(int* current, char* object, char* buffer, int objectSize){
         if(check && buffer[*current] == '"'){
             lastQuotations = (*current);
             lastQuotationsObject = i;
-        }
 
+        }
         (*current)++;
 
     }
+    int size = 0;
     object[i] = '\0';
+    size = i;
     if(check){
         object[lastQuotationsObject] = '\0';
         (*current) = lastQuotations+1;
+        size = lastQuotationsObject;
     }
+
     (*current)++;
+    (*char_counter) += (size);
 }
 
-Review* buildReview(char* buffer, int linesize)
+Review* buildReview(char* buffer, int linesize, int* char_counter)
 {
     char* id = new char[90];
     char* review_text = new char[linesize];
@@ -185,7 +203,7 @@ Review* buildReview(char* buffer, int linesize)
 
 
     strToData(&current, delimiter, id, buffer, 90);
-    strToReview(&current, review_text, buffer, linesize);
+    strToReview(&current, review_text, buffer, linesize, char_counter);
     strToData(&current, delimiter, upvotes, buffer, 11);
     strToData(&current, delimiter, app_version, buffer, 21);
     strToData(&current, delimiter, posted_date, buffer, 21);
@@ -211,7 +229,7 @@ Review* buildReview(char* buffer, int linesize)
     return review;
 }
 
-bool processar(ifstream& input_file, ofstream& bin_file){
+bool processar(ifstream& input_file, ofstream* files){
 
     constexpr size_t bufferSize = 1024*1024*10; //equivalente a 5mb de memoria
     int const linesize = Review::review_size;
@@ -224,6 +242,7 @@ bool processar(ifstream& input_file, ofstream& bin_file){
     input_file.getline(table_head, linesize, '\n');
     int counter = 0;
     int total_lines = 0;
+    int char_counter = 0;
 
     cout << "Iniciando processamento: " << endl;
 
@@ -268,6 +287,8 @@ bool processar(ifstream& input_file, ofstream& bin_file){
                     entreAspas = !entreAspas;
                 }
 
+
+
                 if (buffer[current] == '\n' && virgulas == 4) {
                     break;
                 } else if (buffer[current] == '\n') {
@@ -281,26 +302,17 @@ bool processar(ifstream& input_file, ofstream& bin_file){
             line[i] = '\0';
 
             current++;
-            buildReview(line, linesize)->serializar_review(bin_file);
+
+            Review::serializar_int(files[1], char_counter);
+            buildReview(line, linesize, &char_counter)->serializar_review(files[0]);
 
             counter++;
 
-
             delete[] line;
-//
+
             if(counter == review_array_size){
 
                 total_lines += counter;
-//
-//                int counter2 = 0;
-//                for(int j = 0; j < counter; j++){
-//                    review_list[j].serializar_review(bin_file);
-//                    counter2++;
-//                }
-//
-//
-//                delete [] review_list;
-//                review_list = new Review[review_array_size];
                 counter = 0;
 
                 cout << total_lines << " de Reviews processadas" << endl << "continuando processamento..." << endl;
@@ -313,11 +325,8 @@ bool processar(ifstream& input_file, ofstream& bin_file){
     total_lines += counter;
     cout << "Processamento finalizado! Total de Reviews analisadas: " << total_lines << endl;
 
-    for(int j = 0; j < counter; j++){
-        review_list[j].serializar_review(bin_file);
-    }
-
     delete [] review_list;
+
 
     return true;
 }
@@ -331,43 +340,49 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
-    ifstream input_file;
-    input_file.open(argv[1] + bin_name, ios::in);
-    if(input_file.is_open())
+    ifstream read_files[2];
+    read_files[0].open(argv[1] + bin_name, ios::in);
+    read_files[1].open(argv[1] + index_name, ios::in);
+    if(read_files[0].is_open() && read_files[1].is_open())
     {
-        cout << "Arquivo binario econtrado com sucesso!" << endl;
+        cout << "Arquivos binarios econtrados com sucesso!" << endl;
         // Pré-processamento do arquivo csv para binário
-        mainMenu(input_file, argv[1]);
+        mainMenu(read_files, argv[1]);
     }else{
-        input_file.close();
-        cout << "Arquivo binario nao encontrado, procurando csv..." << endl;
-        input_file.open(argv[1] + csv_name, ios::in);
-        if(input_file.is_open())
+        read_files[0].close();
+        read_files[1].close();
+        cout << "Arquivos binarios nao encontrados, procurando csv..." << endl;
+
+        read_files[0].open(argv[1] + csv_name, ios::in);
+        if(read_files[0].is_open())
         {
             cout << "Csv econtrado com sucesso!" << endl;
             // Pré-processamento do arquivo csv para binário
 
 
-            ofstream write_bin_file;
-            write_bin_file.open(argv[1] + bin_name,  ios::binary);
-
+            //file 0 = binario
+            //file 1 = index
+            ofstream write_files[2];
+            write_files[0].open(argv[1] + bin_name,  ios::binary | ios::trunc);
+            write_files[1].open(argv[1] + index_name, ios::binary | ios::trunc);
             Review* review = new Review();
-            processar(input_file, write_bin_file);
-            write_bin_file.close();
+            processar(read_files[0], write_files);
+            write_files[0].close();
+            write_files[1].close();
 
 
-            ifstream read_bin_file;
-            read_bin_file.open(argv[1] + bin_name, ios::binary);
+            read_files[0].open(argv[1] + bin_name, ios::binary);
+            read_files[1].open(argv[1] + index_name, ios::binary);
 
-            if(read_bin_file.is_open()) {
-                mainMenu(read_bin_file, argv[1]);
+            if(read_files[0].is_open() && read_files[1].is_open()) {
+                mainMenu(read_files, argv[1]);
             } else{
                 cout << "Impossibilitado de abrir o arquivo binario" << endl;
                 exit(1);
             }
 
         }else{
-            input_file.close();
+            read_files[0].close();
             cout << "Impossibilitado de abrir o arquivo csv" << endl;
             exit(1);
         }
