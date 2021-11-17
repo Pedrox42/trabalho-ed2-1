@@ -69,59 +69,81 @@ void selecionar(int selecao, ifstream* files, string path){
 
                 cout << "pedo de uma review sem reviewtext: " << Review::getSizeOf(0) << endl;
                 review->print();
+                files[1].clear();
+                files[0].clear();
             } else {
                 cout << "Erro: Essa review nao existe!" << endl;
             }
-
+            break;
         }
-        //Note que a função testeImportacao() é apenas uma função de teste.
-        // O programa deve ser capaz de importar registros do arquivo para quaisquer valores de N, sem erros e sem gerar exceções.
-//        case 2:
-//        {
-//            input_file.seekg(0, ios::end);
-//            double total = input_file.tellg();
-//            double reviews = total/Review::getSizeOf();
-//
-//            cout << "escolha uma das opcoes: " << endl;
-//            cout << "[1] 10 reviews aleatorias sejam apresentadas no console" << endl;
-//            cout << "[2] 100 reviews sejam salvas para o arquvio output.txt" << endl;
-//            cout << "Reviews: " << reviews << endl;
-//            int resposta;
-//            int n = 0;
-//            cin >> resposta;
-//            if(resposta == 1){
-//                n = 10;
-//                for(int i = 0; i < n; i++) {
-//                    int random = rand();
-//                    double option = (random + int(random / reviews) * reviews);
-//                    input_file.seekg(option * Review::getSizeOf(), ios::beg);
-//                    Review *review = Review::desserializar_review(input_file);
-//                    cout << "Review: " << option << endl;
-//                    review->print();
-//                }
-//
-//            } else if(resposta == 2) {
-//                n = 100;
-//                ofstream txt_file;
-//                txt_file.open((path + "output.txt"), ios::out | ios::trunc);
-//
-//                for(int i = 0; i < n; i++){
-//                    int random = rand();
-//                    double option = (random + int(random/reviews) * reviews);
-//                    input_file.seekg( option * Review::getSizeOf(), ios::beg);
-//                    Review* review = Review::desserializar_review(input_file);
-//                    txt_file << "Review: " << option << endl;
-//                    txt_file << "Id: " << review->getReviewId() << endl;
-//                    txt_file <<  "App Version: " << review->getAppVersion() << endl;
-//                    txt_file <<  "Data de postagem: " << review->getPostedDate() << endl;
-//                    txt_file <<  "Texto: " << review->getReviewText() << endl;
-//                    txt_file <<  "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
-//                }
-//                txt_file.close();
-//            } else{
-//                cout << "resposta invalida!" << endl;
-//            }
-//        }
+//        Note que a função testeImportacao() é apenas uma função de teste.
+//         O programa deve ser capaz de importar registros do arquivo para quaisquer valores de N, sem erros e sem gerar exceções.
+        case 2:
+        {
+            //binario no incio
+            files[0].seekg(0, ios::beg);
+
+            //index no fim
+            files[1].seekg(0, ios::end);
+            int size = files[1].tellg();
+            files[1].seekg(0, ios::beg);
+
+            int reviews = size/sizeof(int);
+
+            cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
+
+            cout << "escolha uma das opcoes: " << endl;
+            cout << "[1] 10 reviews aleatorias sejam apresentadas no console" << endl;
+            cout << "[2] 100 reviews sejam salvas para o arquvio output.txt" << endl;
+            int resposta;
+            int n = 0;
+            cin >> resposta;
+            if(resposta == 1){
+                n = 10;
+                for(int i = 0; i < n; i++) {
+                    int random = rand();
+                    double option = (random + int(random / reviews) * reviews);
+                    files[1].seekg((option) * sizeof(int), ios::beg);
+                    int char_total = Review::desserializar_int(files[1]);
+                    cout << "char total: " << char_total << endl;
+                    double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
+                    cout << "peso total: " << peso << endl;
+                    files[0].seekg(peso, ios::beg);
+                    Review* review = Review::desserializar_review(files[0]);
+                    review->print();
+                    files[1].clear();
+                    files[0].clear();
+                }
+
+            } else if(resposta == 2) {
+                n = 100;
+                ofstream txt_file;
+                txt_file.open((path + "output.txt"), ios::out | ios::trunc);
+
+                for(int i = 0; i < n; i++){
+                    int random = rand();
+                    double option = (random + int(random/reviews) * reviews);
+                    files[1].seekg((option) * sizeof(int), ios::beg);
+                    int char_total = Review::desserializar_int(files[1]);
+                    double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
+                    files[0].seekg(peso, ios::beg);
+
+                    Review* review = Review::desserializar_review(files[0]);
+                    txt_file << "Review: " << option << endl;
+                    txt_file << "Id: " << review->getReviewId() << endl;
+                    txt_file <<  "App Version: " << review->getAppVersion() << endl;
+                    txt_file <<  "Data de postagem: " << review->getPostedDate() << endl;
+                    txt_file <<  "Texto: " << review->getReviewText() << endl;
+                    txt_file <<  "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
+                    files[1].clear();
+                    files[0].clear();
+                }
+                txt_file.close();
+            } else{
+                cout << "resposta invalida!" << endl;
+            }
+            break;
+        }
     }
 }
 
