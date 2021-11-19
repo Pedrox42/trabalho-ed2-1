@@ -242,24 +242,36 @@ Review* buildReview(char* buffer, int linesize, int* char_counter)
         cout << "upvotes " << upvotes << endl;
     }
 
-    delete [] id;
-    delete [] review_text;
-    delete [] app_version;
-    delete [] posted_date;
-    delete [] upvotes;
+    // delete [] id;
+    // delete [] review_text;
+    // delete [] app_version;
+    // delete [] posted_date;
+    // delete [] upvotes;
 
     return review;
 }
 
+void mergeStr(char* s1, char* s2, int t2)
+{
+    int count = 0;
+    int j = 0;
+    for(int i = 0; s1[i] != '\0'; i++) {
+        count++;
+    }
+    for(int i = count; i < count+t2; i++) {
+        s1[i] = s2[j];
+        j++;
+    }
+    s1[count+t2+1] = '\0';
+}
+
 bool processar(ifstream& input_file, ofstream* files){
 
-    constexpr size_t bufferSize = 1024*1024*10; //equivalente a 5mb de memoria
+    constexpr size_t bufferSize = 5000; //equivalente a 5mb de memoria
     int const linesize = Review::review_size;
-    constexpr size_t readBufferSize = bufferSize - linesize;
+    constexpr size_t readBufferSize = bufferSize - 3*linesize;
     char* table_head = new char[100];
-    int review_array_size = 100000;
-    Review* review_list = new Review[review_array_size];
-
+    int review_array_size = 1000;
 
     input_file.getline(table_head, linesize, '\n');
     int counter = 0;
@@ -267,6 +279,7 @@ bool processar(ifstream& input_file, ofstream* files){
     int char_counter = 0;
 
     cout << "Iniciando processamento: " << endl;
+
 
     while (input_file)
     {
@@ -279,12 +292,11 @@ bool processar(ifstream& input_file, ofstream* files){
 
         input_file.getline(bufferAux, linesize, '\n');
 
-        strcat(buffer, bufferAux);
-
-
+        mergeStr(buffer, bufferAux, linesize);
+        //strncat(buffer, bufferAux, linesize);
 
         int current = 0;
-        while (buffer[current] != '\0') {
+        while (buffer[current] != '\0' && current < bufferSize) {
 
             char *line = new char[linesize];
 
@@ -292,13 +304,12 @@ bool processar(ifstream& input_file, ofstream* files){
             int virgulas = 0;
             bool entreAspas = false;
             int newlines = 0;
-            for (i = 0; i < linesize; i++) {
-
+            for (i = 0; i < linesize && current < bufferSize; i++) {
                 if(buffer[current] == '\0' && virgulas != 4){
                     char *bufferFix = new char[linesize];
                     input_file.getline(bufferFix, linesize, '\n');
-                    strcat(buffer, bufferFix);
-                    delete [] bufferFix;
+                    mergeStr(buffer, bufferFix, linesize);
+                    //delete [] bufferFix;
                 }
 
                 if (buffer[current] == ',' && !entreAspas) {
@@ -314,19 +325,23 @@ bool processar(ifstream& input_file, ofstream* files){
                 if (buffer[current] == '\n' && virgulas == 4) {
                     break;
                 } else if (buffer[current] == '\n') {
-                    buffer[current] = ' ';
+                    current++;
+                    continue;
                 }
 
                 line[i] = buffer[current];
                 current++;
             }
 
-            line[i] = '\0';
-
-            current++;
+            line[i-1] = '\0';
 
             Review::serializar_int(files[1], char_counter);
-            buildReview(line, linesize, &char_counter)->serializar_review(files[0]);
+         
+            Review *r = buildReview(line, linesize, &char_counter);
+            //cout << "Teste entre build review e serializar review";
+            r->serializar_review(files[0]);
+            //delete r;
+            //buildReview(line, linesize, &char_counter)->serializar_review(files[0]);
 
             counter++;
 
@@ -339,6 +354,7 @@ bool processar(ifstream& input_file, ofstream* files){
 
                 cout << total_lines << " de Reviews processadas" << endl << "continuando processamento..." << endl;
             }
+
         }
 
         delete[] bufferAux;
@@ -347,7 +363,7 @@ bool processar(ifstream& input_file, ofstream* files){
     total_lines += counter;
     cout << "Processamento finalizado! Total de Reviews analisadas: " << total_lines << endl;
 
-    delete [] review_list;
+    // delete [] review_list;
 
 
     return true;

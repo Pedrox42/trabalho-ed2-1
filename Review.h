@@ -19,7 +19,7 @@ private:
 public:
 
     static const int id_size = 90;
-    static const int review_size = 5000;
+    static const int review_size = 1000;
     static const int date_size = 21;
     static const int version_size = 21;
 
@@ -58,8 +58,6 @@ public:
 
     static char *desserializar_char(ifstream &bin_file);
 
-    void serializar_review(ofstream &bin_file);
-
     static Review* desserializar_review(ifstream &bin_file);
 
     static int desserializar_int(ifstream &bin_file);
@@ -68,7 +66,11 @@ public:
 
     static void serializar_int(ofstream &bin_file, int value);
 
-    static void serializar_review(ofstream &bin_file, char *str);
+    static void serializar_review_text(ofstream &bin_file, char *str);
+
+    void serializar_review(ofstream &bin_file);
+
+    static int stringLength(string str);
 };
 
 

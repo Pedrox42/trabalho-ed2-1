@@ -94,15 +94,22 @@ void Review::serializar_char(ofstream& bin_file, char* str, int size){
     bin_file.write((char*)serialized_char, size*sizeof(char));
 }
 
-void Review::serializar_review(ofstream& bin_file, char* str){
+void Review::serializar_review_text(ofstream& bin_file, char* str){
+    cout << "Entrou na função" << endl;
     int size = 0;
 
     for(int i = 0; str[i] != '\0'; i++){
+        cout << str[i] << endl;
+        cout << i << endl;
         size++;
     }
 
+    cout << "Antes do write bin file" << endl;
+
     bin_file.write((char*)&size, sizeof(int));
     bin_file.write((char*)str, size*sizeof(char));
+
+    cout << "Final serializar review" << endl;
 }
 
 
@@ -126,25 +133,41 @@ int Review::desserializar_int(ifstream& bin_file){
     return size;
 }
 
+int Review::stringLength(string str) {
+    int size = 0;
+    cout << str << endl;
+    for(int i = 0; str[i] != '\0'; i++) {
+        cout << str[i];
+        size++;
+    }
+    return size + 1;
+}
+
 void Review::serializar_review(ofstream& bin_file){
 
-    char * id = new char [this->getReviewId().length()+1];
-    strcpy(id, this->getReviewId().c_str());
-    serializar_char(bin_file, id, id_size);
+    stringLength(this->getReviewId());
+    // char * id = new char [this->getReviewId().length()+1];
+    // // strcpy(id, this->getReviewId().c_str());
+    // // serializar_char(bin_file, id, id_size);
 
-    char * review_text = new char [this->getReviewText().length()+1];
-    strcpy(review_text, this->getReviewText().c_str());
-    serializar_review(bin_file, review_text);
+    // char * review_text = new char [this->getReviewText().length()+1];
+    // // strcpy(review_text, this->getReviewText().c_str());
+    // // serializar_review_text(bin_file, review_text);
 
-    Review::serializar_int(bin_file, this->getUpvotes());
+    // //Review::serializar_int(bin_file, this->getUpvotes());
 
-    char * app_version = new char [this->getAppVersion().length()+1];
-    strcpy(app_version, this->getAppVersion().c_str());
-    serializar_char(bin_file, app_version, version_size);
+    // char * app_version = new char [this->getAppVersion().length()+1];
+    // // strcpy(app_version, this->getAppVersion().c_str());
+    // // serializar_char(bin_file, app_version, version_size);
 
-    char * posted_date = new char [this->getPostedDate().length()+1];
-    strcpy(posted_date, this->getPostedDate().c_str());
-    serializar_char(bin_file, posted_date, date_size);
+    // char * posted_date = new char [this->getPostedDate().length()+1];
+    // // strcpy(posted_date, this->getPostedDate().c_str());
+    // // serializar_char(bin_file, posted_date, date_size);
+
+    // // delete [] id;
+    // // delete [] review_text;
+    // // delete [] app_version;
+    // // delete [] posted_date;
 
 }
 
