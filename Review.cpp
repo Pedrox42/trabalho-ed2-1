@@ -3,17 +3,30 @@
 #include <fstream>
 #include <cstring>
 
-Review::Review(const string &reviewId, const string &reviewText, const string &appVersion, const string &postedDate, int upvotes){
+Review::Review(char* reviewId, char* reviewText, char* appVersion, char* postedDate, int upvotes, int reviewSize){
+    this->review_id = new char[id_size];
     this->review_id = reviewId;
+
+    this->review_text = new char[reviewSize];
     this->review_text = reviewText;
+
+    this->app_version = new char[version_size];
     this->app_version = appVersion;
+
+    this->posted_date =  new char[date_size];
     this->posted_date = postedDate;
+
     this->upvotes = upvotes;
+    this->review_size = reviewSize;
 }
 
 Review::Review(){}
 
 Review::~Review(){
+    delete [] review_id;
+    delete [] review_text;
+    delete [] app_version;
+    delete [] posted_date;
 }
 
 void Review::recieveReview(Review* review){
@@ -22,47 +35,56 @@ void Review::recieveReview(Review* review){
     this->app_version = review->app_version;
     this->posted_date = review->posted_date;
     this->upvotes = review->upvotes;
+    this->review_size = review->review_size;
 
 }
 
-const string &Review::getReviewId() const {
+char* Review::getReviewId(){
     return review_id;
 }
 
-void Review::setReviewId(const string &reviewId) {
+void Review::setReviewId(char* reviewId) {
     review_id = reviewId;
 }
 
-const string &Review::getReviewText() const {
+char* Review::getReviewText(){
     return review_text;
 }
 
-void Review::setReviewText(const string &reviewText) {
+void Review::setReviewText(char* reviewText) {
     review_text = reviewText;
 }
 
-const string &Review::getAppVersion() const {
+char* Review::getAppVersion(){
     return app_version;
 }
 
-void Review::setAppVersion(const string &appVersion) {
+void Review::setAppVersion(char* appVersion) {
     app_version = appVersion;
 }
 
-const string &Review::getPostedDate() const {
+char* Review::getPostedDate(){
     return posted_date;
 }
 
-void Review::setPostedDate(const string &postedDate) {
+void Review::setPostedDate(char* postedDate) {
     posted_date = postedDate;
 }
 
-int Review::getUpvotes() const {
+int Review::getUpvotes(){
     return upvotes;
 }
 
 void Review::setUpvotes(int upvotes) {
     Review::upvotes = upvotes;
+}
+
+int Review::getReviewSize() const {
+    return review_size;
+}
+
+void Review::setReviewSize(int reviewSize) {
+    review_size = reviewSize;
 }
 
 int Review::getSizeOf(int review_characters) {
@@ -80,18 +102,8 @@ void Review::print(){
 }
 
 void Review::serializar_char(ofstream& bin_file, char* str, int size){
-    int counter = 0;
-    char* serialized_char = new char[size];
-
-    for(int i = 0; str[i] != '\0'; i++){
-        serialized_char[i] = str[i];
-        counter++;
-    }
-
-    serialized_char[counter] = '\0';
-
     bin_file.write((char*)&size, sizeof(int));
-    bin_file.write((char*)serialized_char, size*sizeof(char));
+    bin_file.write((char*)str, size*sizeof(char));
 }
 
 void Review::serializar_review_text(ofstream& bin_file, char* str){
@@ -123,7 +135,6 @@ char* Review::desserializar_char(ifstream& bin_file){
     bin_file.read((char*)&size, sizeof(int));
     str = new char[size];
     bin_file.read((char*)str, size*sizeof(char));
-
     return str;
 }
 
@@ -144,31 +155,11 @@ int Review::stringLength(string str) {
 }
 
 void Review::serializar_review(ofstream& bin_file){
-
-    stringLength(this->getReviewId());
-    // char * id = new char [this->getReviewId().length()+1];
-    // // strcpy(id, this->getReviewId().c_str());
-    // // serializar_char(bin_file, id, id_size);
-
-    // char * review_text = new char [this->getReviewText().length()+1];
-    // // strcpy(review_text, this->getReviewText().c_str());
-    // // serializar_review_text(bin_file, review_text);
-
-    // //Review::serializar_int(bin_file, this->getUpvotes());
-
-    // char * app_version = new char [this->getAppVersion().length()+1];
-    // // strcpy(app_version, this->getAppVersion().c_str());
-    // // serializar_char(bin_file, app_version, version_size);
-
-    // char * posted_date = new char [this->getPostedDate().length()+1];
-    // // strcpy(posted_date, this->getPostedDate().c_str());
-    // // serializar_char(bin_file, posted_date, date_size);
-
-    // // delete [] id;
-    // // delete [] review_text;
-    // // delete [] app_version;
-    // // delete [] posted_date;
-
+    serializar_char(bin_file, this->getReviewId(), id_size);
+    serializar_char(bin_file, this->getReviewText(), this->getReviewSize());
+    Review::serializar_int(bin_file, this->getUpvotes());
+    serializar_char(bin_file, this->getAppVersion(), version_size);
+    serializar_char(bin_file, this->getPostedDate(), date_size);
 }
 
 Review* Review::desserializar_review(ifstream& bin_file){

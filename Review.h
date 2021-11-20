@@ -8,45 +8,44 @@ using namespace std;
 class Review {
 
 private:
-    string review_id;
-    string review_text;
-    string app_version;
-    string posted_date;
+    char* review_id;
+    char* review_text;
+    char* app_version;
+    char* posted_date;
     int upvotes;
-
-
+    int review_size;
 
 public:
 
     static const int id_size = 90;
-    static const int review_size = 1000;
     static const int date_size = 21;
     static const int version_size = 21;
+    static const int line_size = 5000;
 
-    Review(const string &reviewId, const string &reviewText, const string &appVersion, const string &postedDate, int upvotes);
+    Review(char* reviewId, char* reviewText, char* appVersion, char* postedDate, int upvotes, int reviewSize);
 
     //construtor vazio para possiblitar criação de array
     Review();
 
     ~Review();
 
-    const string &getReviewId() const;
+    char* getReviewId();
 
-    void setReviewId(const string &reviewId);
+    void setReviewId(char* reviewId);
 
-    const string &getReviewText() const;
+    char* getReviewText();
 
-    void setReviewText(const string &reviewText);
+    void setReviewText(char* reviewText);
 
-    const string &getAppVersion() const;
+    char* getAppVersion();
 
-    void setAppVersion(const string &appVersion);
+    void setAppVersion(char* appVersion);
 
-    const string &getPostedDate() const;
+    char* getPostedDate();
 
-    void setPostedDate(const string &postedDate);
+    void setPostedDate(char* postedDate);
 
-    int getUpvotes() const;
+    int getUpvotes();
 
     void setUpvotes(int upvotes);
 
@@ -71,6 +70,10 @@ public:
     void serializar_review(ofstream &bin_file);
 
     static int stringLength(string str);
+
+    int getReviewSize() const;
+
+    void setReviewSize(int reviewSize);
 };
 
 

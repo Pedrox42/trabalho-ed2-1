@@ -61,13 +61,10 @@ void selecionar(int selecao, ifstream* files, string path){
             if(chosen > 0 && chosen <= reviews){
                 files[1].seekg((chosen-1) * sizeof(int), ios::beg);
                 int char_total = Review::desserializar_int(files[1]);
-                cout << "char total: " << char_total << endl;
                 double peso = ( char_total*sizeof(char) ) + ( (chosen-1) * Review::getSizeOf(0) );
-                cout << "peso total: " << peso << endl;
+                cout << "peso de leitura: " << endl;
                 files[0].seekg(peso, ios::beg);
                 Review* review = Review::desserializar_review(files[0]);
-
-                cout << "pedo de uma review sem reviewtext: " << Review::getSizeOf(0) << endl;
                 review->print();
                 files[1].clear();
                 files[0].clear();
@@ -102,12 +99,10 @@ void selecionar(int selecao, ifstream* files, string path){
                 n = 10;
                 for(int i = 0; i < n; i++) {
                     int random = rand();
-                    double option = (random + int(random / reviews) * reviews);
+                    double option = int(random % reviews);
                     files[1].seekg((option) * sizeof(int), ios::beg);
                     int char_total = Review::desserializar_int(files[1]);
-                    cout << "char total: " << char_total << endl;
                     double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
-                    cout << "peso total: " << peso << endl;
                     files[0].seekg(peso, ios::beg);
                     Review* review = Review::desserializar_review(files[0]);
                     review->print();
@@ -122,7 +117,7 @@ void selecionar(int selecao, ifstream* files, string path){
 
                 for(int i = 0; i < n; i++){
                     int random = rand();
-                    double option = (random + int(random/reviews) * reviews);
+                    double option = int(random % reviews);
                     files[1].seekg((option) * sizeof(int), ios::beg);
                     int char_total = Review::desserializar_int(files[1]);
                     double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
@@ -175,32 +170,43 @@ void strToData(int* current, char delimiter, char* object, char* buffer, int obj
     (*current)++;
 }
 
-void strToReview(int* current, char* object, char* buffer, int objectSize, int* char_counter){
+int strToReview(int* current, char* object, char* buffer, int objectSize, int* char_counter){
     int i = 0;
     int lastQuotations = *current;
     int lastQuotationsObject = 0;
     bool check = false;
     char delimiter = ',';
+    bool entreaspas = false;
 
     if(buffer[*current] == '"'){
         check = true;
+        entreaspas = true;
         delimiter = '\n';
         (*current)++;
     }
 
     for(i = 0; i < objectSize && buffer[*current] != '\0' && buffer[*current] != '\n' && buffer[*current] != delimiter; i++){
+
         object[i] = buffer[*current];
 
         if(check && buffer[*current] == '"'){
             lastQuotations = (*current);
             lastQuotationsObject = i;
+            entreaspas = !entreaspas;
 
         }
+
+        if(buffer[*current+1] == '\0' && entreaspas){
+            (*current)++;
+        }
+
         (*current)++;
 
     }
+
     int size = 0;
     object[i] = '\0';
+
     size = i;
     if(check){
         object[lastQuotationsObject] = '\0';
@@ -210,6 +216,7 @@ void strToReview(int* current, char* object, char* buffer, int objectSize, int* 
 
     (*current)++;
     (*char_counter) += (size);
+    return size;
 }
 
 Review* buildReview(char* buffer, int linesize, int* char_counter)
@@ -223,23 +230,24 @@ Review* buildReview(char* buffer, int linesize, int* char_counter)
     char delimiter = ',';
     int current = 0;
 
-
     strToData(&current, delimiter, id, buffer, 90);
-    strToReview(&current, review_text, buffer, linesize, char_counter);
+    int reviewSize = strToReview(&current, review_text, buffer, linesize, char_counter);
     strToData(&current, delimiter, upvotes, buffer, 11);
     strToData(&current, delimiter, app_version, buffer, 21);
     strToData(&current, delimiter, posted_date, buffer, 21);
 
     Review *review;
 
-    try{
-        review = new Review(id, review_text, app_version, posted_date, stoi(upvotes));
 
+
+    try{
+        review = new Review(id, review_text, app_version, posted_date, stoi(upvotes), reviewSize);
     } catch (...){
         review = nullptr;
         cout << "Erro na linha de id: " << id << endl;
         cout << "review: " << review_text << endl;
         cout << "upvotes " << upvotes << endl;
+        exit(1);
     }
 
     // delete [] id;
@@ -267,11 +275,11 @@ void mergeStr(char* s1, char* s2, int t2)
 
 bool processar(ifstream& input_file, ofstream* files){
 
-    constexpr size_t bufferSize = 5000; //equivalente a 5mb de memoria
-    int const linesize = Review::review_size;
+    constexpr size_t bufferSize = 100000; //equivalente a 5mb de memoria
+    int const linesize = Review::line_size;
     constexpr size_t readBufferSize = bufferSize - 3*linesize;
     char* table_head = new char[100];
-    int review_array_size = 1000;
+    int review_array_size = 100000;
 
     input_file.getline(table_head, linesize, '\n');
     int counter = 0;
@@ -279,7 +287,6 @@ bool processar(ifstream& input_file, ofstream* files){
     int char_counter = 0;
 
     cout << "Iniciando processamento: " << endl;
-
 
     while (input_file)
     {
@@ -309,7 +316,9 @@ bool processar(ifstream& input_file, ofstream* files){
                     char *bufferFix = new char[linesize];
                     input_file.getline(bufferFix, linesize, '\n');
                     mergeStr(buffer, bufferFix, linesize);
-                    //delete [] bufferFix;
+                    delete [] bufferFix;
+                } else if(buffer[current] == '\0'){
+                    break;
                 }
 
                 if (buffer[current] == ',' && !entreAspas) {
@@ -320,32 +329,28 @@ bool processar(ifstream& input_file, ofstream* files){
                     entreAspas = !entreAspas;
                 }
 
-
-
                 if (buffer[current] == '\n' && virgulas == 4) {
+                    current++;
                     break;
                 } else if (buffer[current] == '\n') {
                     current++;
                     continue;
                 }
-
                 line[i] = buffer[current];
+
                 current++;
             }
-
-            line[i-1] = '\0';
-
+            line[i] = '\0';
             Review::serializar_int(files[1], char_counter);
-         
+
             Review *r = buildReview(line, linesize, &char_counter);
-            //cout << "Teste entre build review e serializar review";
             r->serializar_review(files[0]);
-            //delete r;
-            //buildReview(line, linesize, &char_counter)->serializar_review(files[0]);
+
+            delete r;
 
             counter++;
 
-            delete[] line;
+           delete[] line;
 
             if(counter == review_array_size){
 
@@ -403,11 +408,16 @@ int main(int argc, char const *argv[]) {
             ofstream write_files[2];
             write_files[0].open(argv[1] + bin_name,  ios::binary | ios::trunc);
             write_files[1].open(argv[1] + index_name, ios::binary | ios::trunc);
-            Review* review = new Review();
+
             processar(read_files[0], write_files);
+
             write_files[0].close();
             write_files[1].close();
+            read_files[0].close();
 
+            write_files[0].clear();
+            write_files[1].clear();
+            read_files[0].clear();
 
             read_files[0].open(argv[1] + bin_name, ios::binary);
             read_files[1].open(argv[1] + index_name, ios::binary);
