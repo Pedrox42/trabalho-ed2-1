@@ -14,7 +14,7 @@ const string index_name = "index.bin";
 
 
 
-
+//funcao responsavel por apresentar o menu de opcoes
 int menu(){
     int selecao;
 
@@ -30,6 +30,7 @@ int menu(){
     return selecao;
 }
 
+//funcao responsavel por receber o resultado da selecao e aplicar o comando respectivo
 void selecionar(int selecao, ifstream* files, string path){
 
     switch (selecao)
@@ -161,7 +162,7 @@ int mainMenu(ifstream* files, string path){
     return 0;
 }
 
-
+//funcao responsavel por ler a linha e transforma-la nos dados formatados para os dados normais objeto "Review"
 void strToData(int* current, char delimiter, char* object, char* buffer, int objectSize){
     int i = 0;
     for(i = 0; i < objectSize && buffer[*current] != '\0' && buffer[*current] != '\n' && buffer[*current] != delimiter; i++){
@@ -174,6 +175,9 @@ void strToData(int* current, char delimiter, char* object, char* buffer, int obj
     (*current)++;
 }
 
+
+//funcao similar a strToData, entretanto como a review pode pussir
+// virgulas e tem variantes a mais que os outros dados, uma função específica para sua leitura foi feita
 int strToReview(int* current, char* object, char* buffer, int objectSize, int* char_counter){
     int i = 0;
     int lastQuotations = *current;
@@ -182,6 +186,10 @@ int strToReview(int* current, char* object, char* buffer, int objectSize, int* c
     char delimiter = ',';
     bool entreaspas = false;
 
+    //verifica a presenca de aspas no inicio da review
+    // e seta variaveis de base para verificacoes
+    //a variavel "entreaspas" eh especialmente importante para perceber quais virgulas de fato sao separadoras do csv
+    //ou apenas virgulas contidas na string da reivew
     if(buffer[*current] == '"'){
         check = true;
         entreaspas = true;
@@ -189,6 +197,7 @@ int strToReview(int* current, char* object, char* buffer, int objectSize, int* c
         (*current)++;
     }
 
+    //for loop para aplicar logica e ler string e transforma-la na review
     for(i = 0; i < objectSize && buffer[*current] != '\0' && buffer[*current] != '\n' && buffer[*current] != delimiter; i++){
 
         object[i] = buffer[*current];
@@ -197,7 +206,6 @@ int strToReview(int* current, char* object, char* buffer, int objectSize, int* c
             lastQuotations = (*current);
             lastQuotationsObject = i;
             entreaspas = !entreaspas;
-
         }
 
         if(buffer[*current+1] == '\0' && entreaspas){
@@ -223,8 +231,11 @@ int strToReview(int* current, char* object, char* buffer, int objectSize, int* c
     return size;
 }
 
+//funcao que recebe a string de linha nao formata e a transforma no objeto da review
+//esse processo eh feito utilizando as funcoes de strToData e strToreview
 Review* buildReview(char* buffer, int linesize, int* char_counter)
 {
+    //alocando vetores
     char* id = new char[90];
     char* review_text = new char[linesize];
     char* upvotes = new char[11];
@@ -234,6 +245,7 @@ Review* buildReview(char* buffer, int linesize, int* char_counter)
     char delimiter = ',';
     int current = 0;
 
+    //formatacao dos dados
     strToData(&current, delimiter, id, buffer, 90);
     int reviewSize = strToReview(&current, review_text, buffer, linesize, char_counter);
     strToData(&current, delimiter, upvotes, buffer, 11);
@@ -251,7 +263,7 @@ Review* buildReview(char* buffer, int linesize, int* char_counter)
         cout << "Erro na linha de id: " << id << endl;
         cout << "review: " << review_text << endl;
         cout << "upvotes " << upvotes << endl;
-        exit(1);
+        //exit(1);
     }
 
     // delete [] id;
@@ -278,14 +290,18 @@ void mergeStr(char* s1, char* s2, int t2)
     s1[count+t2+1] = '\0';
 }
 
+//funcao responsavel por ler o csv utilizando um buffer e chamar as respectivas funcoes de
+//serializacao nos arquivos binarios de index e tiktok_app_reviews
 bool processar(ifstream& input_file, ofstream* files){
 
-    constexpr size_t bufferSize = 100000; //equivalente a 5mb de memoria
+    //declaracao de variaveis e alocacao de vetores necessarios
+    constexpr size_t bufferSize = 1024*1024*5; //equivalente a 5mb de memoria
     int const linesize = Review::line_size;
     constexpr size_t readBufferSize = bufferSize - 3*linesize;
     char* table_head = new char[100];
-    int review_array_size = 100000;
+    int review_array_size = 500000;
 
+    //retirando primeira linha desnecessaria do csv
     input_file.getline(table_head, linesize, '\n');
     int counter = 0;
     int total_lines = 0;
@@ -300,14 +316,14 @@ bool processar(ifstream& input_file, ofstream* files){
 
         //criando buffer de leitura, buscando por tamanho setado
         // e utilizando o getline para ir para a proxima linha
+        //por fim concatena as 2 strings utilizando a funcao "mergeStr"
         input_file.read(buffer, readBufferSize);
-
         input_file.getline(bufferAux, linesize, '\n');
-
         mergeStr(buffer, bufferAux, linesize);
-        //strncat(buffer, bufferAux, linesize);
 
         int current = 0;
+        //loop para criar as linhas e envia-las para as funcoes de formatacao
+        //criar as reviews e serializa-las
         while (buffer[current] != '\0' && current < bufferSize) {
 
             char *line = new char[linesize];
@@ -317,6 +333,8 @@ bool processar(ifstream& input_file, ofstream* files){
             bool entreAspas = false;
             int newlines = 0;
             for (i = 0; i < linesize && current < bufferSize; i++) {
+
+                //verifica pra possiveis erros de newlines no final do buffer
                 if(buffer[current] == '\0' && virgulas != 4){
                     char *bufferFix = new char[linesize];
                     input_file.getline(bufferFix, linesize, '\n');
@@ -326,14 +344,19 @@ bool processar(ifstream& input_file, ofstream* files){
                     break;
                 }
 
+                //verificacao se a virgula, e verificando se esta entre aspas
+                //pois nesse caso seria uma virgula da string da review e nao um separador do csv
                 if (buffer[current] == ',' && !entreAspas) {
                     virgulas++;
                 }
 
+                //verificacao para saber se esta ou nao "entre aspas"
+                //sabendo que toda aspas na review sao duplas, com excecao da inicial e final
                 if (buffer[current] == '"') {
                     entreAspas = !entreAspas;
                 }
 
+                //verifica para newlines errados no meio da linha, ao verificar se pelo menos os 4 objetos foram lidos
                 if (buffer[current] == '\n' && virgulas == 4) {
                     current++;
                     break;
@@ -346,9 +369,15 @@ bool processar(ifstream& input_file, ofstream* files){
                 current++;
             }
             line[i] = '\0';
-            Review::serializar_int(files[1], char_counter); //pega no arquivo binario com os indices a review correspondente pelo iterador
 
+            //o processo de serializacao no index, utilizando a quantidade de caracteres atuais para poder posteriomente descobrir
+            //sua posicao no binario principal
+            Review::serializar_int(files[1], char_counter);
+
+            //construindo a review utilizando a linha
             Review *r = buildReview(line, linesize, &char_counter);
+
+            //serializacao da review no arquivo binario principal
             r->serializar_review(files[0]); //cria a review com os dados provenientes do binário
 
             delete r;
