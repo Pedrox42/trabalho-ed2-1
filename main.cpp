@@ -16,42 +16,38 @@ typedef Review* ReviewPtr;
 using namespace std::chrono;
 
 //algoritmos de sort
-
-void swapReview(ReviewPtr review1, ReviewPtr review2){
-    cout << "1: " << review1->getUpvotes() << " 2: " << review2->getUpvotes() << endl;
-    cout << "iniciou swap " << endl;
-    ReviewPtr aux = review1;
-    review1 = review2;
-    review2 = aux;
-    cout << "finalizou swap " << endl;
-    cout << "1: " << review1->getUpvotes() << " 2: " << review2->getUpvotes() << endl;
-
-}
-
-
-int particionamento(ReviewPtr* review_list, int p, int q){
+int particionamento(ReviewPtr* review_list, int p, int q, int* movimentacao, int* comparacoes){
+    //declaraçoes das variaveis com pivo sendo o ponto mais a direita
     int pivo = q;
     int i = p;
     int j = q;
-    //cout << "valor do pivo: " << review_list[pivo].getUpvotes() << endl;
+
+    //loop principal de comparacoes
     do {
-        while(review_list[i]->getUpvotes() < review_list[pivo]->getUpvotes()) { i++; }
-        while(review_list[j]->getUpvotes() > review_list[pivo]->getUpvotes()) { j--; }
+        //levando em conta as comparacoes que serão falsas
+        (*comparacoes) += 2;
+        while(review_list[i]->getUpvotes() < review_list[pivo]->getUpvotes()) { i++; (*comparacoes)++; }
+        while(review_list[j]->getUpvotes() > review_list[pivo]->getUpvotes()) { j--; (*comparacoes)++; }
         if(i <= j){
-            //swapReview(review_list[i], review_list[j]);
+            //fazendo a troca das posicoes
             swap(review_list[i], review_list[j]);
+            (*movimentacao)++;
             i++;
             j--;
         }
-    } while( i <= j);
+    } while(i <= j);
     return j;
 }
 
-void quicksort(ReviewPtr* review_list, int p, int r){
+void quicksort(ReviewPtr* review_list, int p, int r, int* movimentacao, int* comparacoes){
+    //caso os valores recebidos sejam invalidos ou iguais
     if(p < r){
-        int q = particionamento(review_list, p, r);
-        quicksort(review_list, p, q);
-        quicksort(review_list, q+1, r);
+        //recebendo o pivo
+        int q = particionamento(review_list, p, r, movimentacao, comparacoes);
+
+        //aplicando quicksort nos vetores resultantes
+        quicksort(review_list, p, q, movimentacao, comparacoes);
+        quicksort(review_list, q+1, r, movimentacao, comparacoes);
     }
 }
 
@@ -245,14 +241,21 @@ void selecionar(int selecao, ifstream* files, string path){
             //cronometrando o tempo de execucao
             auto stop = high_resolution_clock::now();
             auto duration = duration_cast<microseconds>(stop - start);
-            cout << "Tempo de execucao da funcao: " << duration.count() / pow(10, 6) << " seconds" << endl;
+            cout << "Tempo da importação: " << duration.count() / pow(10, 6) << " seconds" << endl;
 
-            quicksort(review_list, 0, n-1);
-            for(int i = 0; i < n; i++){
-                if(review_list[i]->getUpvotes() != 0 ){
-                    cout << review_list[i]->getUpvotes() << " ";
-                }
-            }
+            start = high_resolution_clock::now();
+
+            //chmando função de quicksort
+            int movimentacoes = 0;
+            int comparacoes = 0;
+            quicksort(review_list, 0, n-1, &movimentacoes, &comparacoes);
+
+            //cronometrando o tempo de execucao
+            stop = high_resolution_clock::now();
+            duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo da execução do quicksort: " << duration.count() / pow(10, 6) << " seconds" << endl;
+            cout << "movimentacoes " << movimentacoes << endl;
+            cout << "comparacoes " << comparacoes << endl;
 
             delete [] review_list;
 
