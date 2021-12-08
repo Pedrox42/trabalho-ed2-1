@@ -51,7 +51,7 @@ public:
 
     void print();
 
-    void recieveReview(Review* review);
+    void receiveReview(Review* review);
 
     static void serializar_char(ofstream &bin_file, char* str, int size);
 

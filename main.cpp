@@ -4,6 +4,7 @@
 #include <string.h>
 #include <ctime>
 #include <cmath>
+#include <chrono>
 
 
 const string csv_name = "tiktok_app_reviews.csv";
@@ -11,7 +12,7 @@ const string bin_name = "tiktok_app_reviews.bin";
 const string index_name = "index.bin";
 
 
-
+using namespace std::chrono;
 
 
 
@@ -22,12 +23,57 @@ int menu(){
     cout << "----" << endl;
     cout << "[1] acessaRegistro(i)" << endl;
     cout << "[2] testeImportacao()" << endl;
+    cout << "[3] importar binario()" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
 
     return selecao;
 }
+
+Review* importarBinario(int n, ifstream* files){
+    files[0].seekg(0, ios::beg);
+
+    //setando posicoes no binario e descobrindo o numero total de reviews
+    files[1].seekg(0, ios::end);
+    int size = files[1].tellg();
+    files[1].seekg(0, ios::beg);
+    int reviews = size/sizeof(int);
+
+    //for loop principal
+    if(n <= reviews){
+
+        //alocando array de reviews
+        Review* review_list = new Review[n];
+
+        for(int i = 0; i < n; i++){
+
+            //gerando numero da review e desserializando a review respectiva utilizando o sistema de index
+            int random = rand();
+            double option = int(random % reviews);
+            files[1].seekg((option) * sizeof(int), ios::beg);
+            int char_total = Review::desserializar_int(files[1]);
+            double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
+            files[0].seekg(peso, ios::beg);
+
+            //lista recebe a review desserializada
+            review_list[i].receiveReview(Review::desserializar_review(files[0]));
+
+            //clear nos files
+            files[1].clear();
+            files[0].clear();
+
+        }
+
+        return review_list;
+
+    } else{
+        cout << "Erro: valor maior do que o numero de reviews!" << endl;
+        return nullptr;
+    }
+
+}
+
 
 void selecionar(int selecao, ifstream* files, string path){
 
@@ -139,6 +185,25 @@ void selecionar(int selecao, ifstream* files, string path){
             }
             break;
         }
+
+        case 3:
+            cout << "Numero de reviews desejada para importacao: " << endl;
+            int n;
+            cin >> n;
+
+            //variavel para cronometrar o tempo de execucao
+            auto start = high_resolution_clock::now();
+
+            Review* review_list = importarBinario(n, files);
+
+            //cronometrando o tempo de execucao
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo de execucao da funcao: " << duration.count() / pow(10, 6) << " seconds" << endl;
+
+            delete [] review_list;
+
+            break;
     }
 }
 

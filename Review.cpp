@@ -29,7 +29,7 @@ Review::~Review(){
     delete [] posted_date;
 }
 
-void Review::recieveReview(Review* review){
+void Review::receiveReview(Review* review){
     this->review_id = review->review_id;
     this->review_text = review->review_text;
     this->app_version = review->app_version;
