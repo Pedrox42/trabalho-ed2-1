@@ -10,9 +10,52 @@
 const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
 const string index_name = "index.bin";
+typedef Review* ReviewPtr;
 
 
 using namespace std::chrono;
+
+//algoritmos de sort
+
+void swapReview(ReviewPtr review1, ReviewPtr review2){
+    cout << "1: " << review1->getUpvotes() << " 2: " << review2->getUpvotes() << endl;
+    cout << "iniciou swap " << endl;
+    ReviewPtr aux = review1;
+    review1 = review2;
+    review2 = aux;
+    cout << "finalizou swap " << endl;
+    cout << "1: " << review1->getUpvotes() << " 2: " << review2->getUpvotes() << endl;
+
+}
+
+
+int particionamento(ReviewPtr* review_list, int p, int q){
+    int pivo = q;
+    int i = p;
+    int j = q;
+    //cout << "valor do pivo: " << review_list[pivo].getUpvotes() << endl;
+    do {
+        while(review_list[i]->getUpvotes() < review_list[pivo]->getUpvotes()) { i++; }
+        while(review_list[j]->getUpvotes() > review_list[pivo]->getUpvotes()) { j--; }
+        if(i <= j){
+            //swapReview(review_list[i], review_list[j]);
+            swap(review_list[i], review_list[j]);
+            i++;
+            j--;
+        }
+    } while( i <= j);
+    return j;
+}
+
+void quicksort(ReviewPtr* review_list, int p, int r){
+    if(p < r){
+        int q = particionamento(review_list, p, r);
+        quicksort(review_list, p, q);
+        quicksort(review_list, q+1, r);
+    }
+}
+
+
 
 
 
@@ -31,7 +74,7 @@ int menu(){
     return selecao;
 }
 
-Review* importarBinario(int n, ifstream* files){
+ReviewPtr* importarBinario(int n, ifstream* files){
     files[0].seekg(0, ios::beg);
 
     //setando posicoes no binario e descobrindo o numero total de reviews
@@ -44,7 +87,10 @@ Review* importarBinario(int n, ifstream* files){
     if(n <= reviews){
 
         //alocando array de reviews
-        Review* review_list = new Review[n];
+        ReviewPtr* review_list = new ReviewPtr[n];
+        for (int i = 0; i < n; ++i) {
+            review_list[i] = new Review();
+        }
 
         for(int i = 0; i < n; i++){
 
@@ -57,7 +103,7 @@ Review* importarBinario(int n, ifstream* files){
             files[0].seekg(peso, ios::beg);
 
             //lista recebe a review desserializada
-            review_list[i].receiveReview(Review::desserializar_review(files[0]));
+            review_list[i]->receiveReview(Review::desserializar_review(files[0]));
 
             //clear nos files
             files[1].clear();
@@ -194,12 +240,19 @@ void selecionar(int selecao, ifstream* files, string path){
             //variavel para cronometrar o tempo de execucao
             auto start = high_resolution_clock::now();
 
-            Review* review_list = importarBinario(n, files);
+            ReviewPtr* review_list = importarBinario(n, files);
 
             //cronometrando o tempo de execucao
             auto stop = high_resolution_clock::now();
             auto duration = duration_cast<microseconds>(stop - start);
             cout << "Tempo de execucao da funcao: " << duration.count() / pow(10, 6) << " seconds" << endl;
+
+            quicksort(review_list, 0, n-1);
+            for(int i = 0; i < n; i++){
+                if(review_list[i]->getUpvotes() != 0 ){
+                    cout << review_list[i]->getUpvotes() << " ";
+                }
+            }
 
             delete [] review_list;
 

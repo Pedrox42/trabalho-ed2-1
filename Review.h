@@ -5,6 +5,7 @@
 
 using namespace std;
 
+
 class Review {
 
 private:
@@ -74,6 +75,8 @@ public:
     int getReviewSize() const;
 
     void setReviewSize(int reviewSize);
+
+    static void swap(Review review1, Review review2);
 };
 
 

@@ -172,4 +172,3 @@ Review* Review::desserializar_review(ifstream& bin_file){
 
     return review;
 }
-
