@@ -88,6 +88,29 @@ int particionamento(ReviewPtr* review_list, int p, int q, int* movimentacao, int
     return j;
 }
 
+int particionamentoTeste(int* review_list, int p, int q, int* movimentacao, int* comparacoes){
+    //declaraçoes das variaveis com pivo sendo o ponto mais a direita
+    int pivo = q;
+    int i = p;
+    int j = q;
+
+    //loop principal de comparacoes
+    do {
+        //levando em conta as comparacoes que serão falsas
+        (*comparacoes) += 2;
+        while(review_list[i] < review_list[pivo]) { i++; (*comparacoes)++; }
+        while(review_list[j] > review_list[pivo]) { j--; (*comparacoes)++; }
+        if(i <= j){
+            //fazendo a troca das posicoes
+            swap(review_list[i], review_list[j]);
+            (*movimentacao)++;
+            i++;
+            j--;
+        }
+    } while(i <= j);
+    return j;
+}
+
 void quicksort(ReviewPtr* review_list, int p, int r, int* movimentacao, int* comparacoes){
     //caso os valores recebidos sejam invalidos ou iguais
     if(p < r){
@@ -97,6 +120,18 @@ void quicksort(ReviewPtr* review_list, int p, int r, int* movimentacao, int* com
         //aplicando quicksort nos vetores resultantes
         quicksort(review_list, p, q, movimentacao, comparacoes);
         quicksort(review_list, q+1, r, movimentacao, comparacoes);
+    }
+}
+
+void quicksortTeste(int* review_list, int p, int r, int* movimentacao, int* comparacoes){
+    //caso os valores recebidos sejam invalidos ou iguais
+    if(p < r){
+        //recebendo o pivo
+        int q = particionamentoTeste(review_list, p, r, movimentacao, comparacoes);
+
+        //aplicando quicksort nos vetores resultantes
+        quicksortTeste(review_list, p, q, movimentacao, comparacoes);
+        quicksortTeste(review_list, q+1, r, movimentacao, comparacoes);
     }
 }
 
@@ -311,6 +346,66 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 4: {
+
+            files[0].seekg(0, ios::beg);
+
+            //setando posicoes no binario e descobrindo o numero total de reviews
+            files[1].seekg(0, ios::end);
+            int size = files[1].tellg();
+            files[1].seekg(0, ios::beg);
+            int reviews = size/sizeof(int);
+
+            files[1].clear();
+            files[0].clear();
+
+
+            auto start2 = high_resolution_clock::now();
+
+            ReviewPtr* review_list2 = new ReviewPtr[1000000];
+            int* random_list = new int[1000000];
+            for (int i = 0; i < 1000000; ++i) {
+                review_list2[i] = new Review();
+                random_list[i] = int(rand() % reviews);
+            }
+
+            int teste = 0;
+            int teste2 = 0;
+            quicksortTeste(random_list, 0, 1000000-1, &teste, &teste2);
+
+            //cronometrando o tempo de execucao
+            auto stop2 = high_resolution_clock::now();
+            auto duration2 = duration_cast<microseconds>(stop2 - start2);
+            cout << "Tempo para criar o array: " << duration2.count() / pow(10, 6) << " seconds" << endl;
+
+
+            start2 = high_resolution_clock::now();
+
+            for(int i = 0; i < 1000000; i++){
+                //gerando numero da review e desserializando a review respectiva utilizando o sistema de index
+                int random = random_list[i];
+                double option = int(random % reviews);
+                files[1].seekg((option) * sizeof(int), ios::beg);
+                int char_total = Review::desserializar_int(files[1]);
+                double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
+                files[0].seekg(peso, ios::beg);
+
+                //lista recebe a review desserializada
+                review_list2[i]->receiveReview(Review::desserializar_review(files[0]));
+
+                //clear nos files
+                files[1].clear();
+                files[0].clear();
+            }
+
+            stop2 = high_resolution_clock::now();
+            duration2 = duration_cast<microseconds>(stop2 - start2);
+            cout << "Tempo para importar o binario: " << duration2.count() / pow(10, 6) << " seconds" << endl;
+
+            for(int i = 0; i < 1000000; i++){
+                cout << review_list2[i]->getUpvotes() << " ";
+            }
+
+            exit(1);
 
             cout << "Numero de reviews desejada para importacao: " << endl;
             int n;
