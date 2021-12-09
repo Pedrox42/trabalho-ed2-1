@@ -15,7 +15,56 @@ typedef Review* ReviewPtr;
 
 using namespace std::chrono;
 
+int heapLeft(int i){
+    return i*2;
+}
+
+int heapRight(int i){
+    return (i*2)+1;
+}
+
+int heapParent(int i){
+    return i/2;
+}
+
+
 //algoritmos de sort
+void maxHeapify(ReviewPtr* review_list, int i, int n, int* movimentacao, int* comparacoes){
+    int l = heapLeft(i);
+    int r = heapRight(i);
+    int m = i;
+
+    (*comparacoes) += 2;
+
+    if(l <= n && review_list[l]->getUpvotes() > review_list[i]->getUpvotes()){
+        m = l;
+    }
+
+    if(r <= n && review_list[r]->getUpvotes() > review_list[m]->getUpvotes()){
+        m = r;
+    }
+
+    if(m != i){
+        (*movimentacao)++;
+        swap(review_list[i], review_list[m]);
+        maxHeapify(review_list, m, n, movimentacao, comparacoes);
+    }
+}
+
+void buildMaxHeap(ReviewPtr* review_list, int n, int* movimentacao, int* comparacoes){
+    for(int i = n/2; i >= 0; i--){
+        maxHeapify(review_list, i, n, movimentacao, comparacoes);
+    }
+}
+
+void heapSort(ReviewPtr* review_list, int n, int* movimentacao, int* comparacoes){
+    buildMaxHeap(review_list, n, movimentacao, comparacoes);
+    for(int i = n; i > 0; i--){
+        swap(review_list[0], review_list[i]);
+        maxHeapify(review_list, 0, i-1, movimentacao, comparacoes);
+    }
+}
+
 int particionamento(ReviewPtr* review_list, int p, int q, int* movimentacao, int* comparacoes){
     //declaraçoes das variaveis com pivo sendo o ponto mais a direita
     int pivo = q;
@@ -62,7 +111,8 @@ int menu(){
     cout << "----" << endl;
     cout << "[1] acessaRegistro(i)" << endl;
     cout << "[2] testeImportacao()" << endl;
-    cout << "[3] importar binario()" << endl;
+    cout << "[3] quicksort" << endl;
+    cout << "[4] heapsort" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -119,18 +169,15 @@ ReviewPtr* importarBinario(int n, ifstream* files){
 
 void selecionar(int selecao, ifstream* files, string path){
 
-    switch (selecao)
-    {
+    switch (selecao) {
         //Sair
-        case 0:
-        {
+        case 0: {
             cout << "Saindo!" << endl;
             exit(0);
             break;
         }
-        //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
-        case 1:
-        {
+            //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
+        case 1: {
             //binario no incio
             files[0].seekg(0, ios::beg);
 
@@ -139,20 +186,20 @@ void selecionar(int selecao, ifstream* files, string path){
             int size = files[1].tellg();
             files[1].seekg(0, ios::beg);
 
-            int reviews = size/sizeof(int);
+            int reviews = size / sizeof(int);
 
             cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
 
 
             double chosen = 0;
             cin >> chosen;
-            if(chosen > 0 && chosen <= reviews){
-                files[1].seekg((chosen-1) * sizeof(int), ios::beg);
+            if (chosen > 0 && chosen <= reviews) {
+                files[1].seekg((chosen - 1) * sizeof(int), ios::beg);
                 int char_total = Review::desserializar_int(files[1]);
-                double peso = ( char_total*sizeof(char) ) + ( (chosen-1) * Review::getSizeOf(0) );
+                double peso = (char_total * sizeof(char)) + ((chosen - 1) * Review::getSizeOf(0));
                 cout << "peso de leitura: " << endl;
                 files[0].seekg(peso, ios::beg);
-                Review* review = Review::desserializar_review(files[0]);
+                Review *review = Review::desserializar_review(files[0]);
                 review->print();
                 files[1].clear();
                 files[0].clear();
@@ -163,8 +210,7 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 //        Note que a função testeImportacao() é apenas uma função de teste.
 //         O programa deve ser capaz de importar registros do arquivo para quaisquer valores de N, sem erros e sem gerar exceções.
-        case 2:
-        {
+        case 2: {
             //binario no incio
             files[0].seekg(0, ios::beg);
 
@@ -173,7 +219,7 @@ void selecionar(int selecao, ifstream* files, string path){
             int size = files[1].tellg();
             files[1].seekg(0, ios::beg);
 
-            int reviews = size/sizeof(int);
+            int reviews = size / sizeof(int);
 
             cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
 
@@ -183,52 +229,54 @@ void selecionar(int selecao, ifstream* files, string path){
             int resposta;
             int n = 0;
             cin >> resposta;
-            if(resposta == 1){
+            if (resposta == 1) {
                 n = 10;
-                for(int i = 0; i < n; i++) {
+                for (int i = 0; i < n; i++) {
                     int random = rand();
                     double option = int(random % reviews);
                     files[1].seekg((option) * sizeof(int), ios::beg);
                     int char_total = Review::desserializar_int(files[1]);
-                    double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
+                    double peso = (char_total * sizeof(char)) + ((option) * Review::getSizeOf(0));
                     files[0].seekg(peso, ios::beg);
-                    Review* review = Review::desserializar_review(files[0]);
+                    Review *review = Review::desserializar_review(files[0]);
                     review->print();
                     files[1].clear();
                     files[0].clear();
                 }
 
-            } else if(resposta == 2) {
+            } else if (resposta == 2) {
                 n = 100;
                 ofstream txt_file;
                 txt_file.open((path + "output.txt"), ios::out | ios::trunc);
 
-                for(int i = 0; i < n; i++){
+                for (int i = 0; i < n; i++) {
                     int random = rand();
                     double option = int(random % reviews);
                     files[1].seekg((option) * sizeof(int), ios::beg);
                     int char_total = Review::desserializar_int(files[1]);
-                    double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
+                    double peso = (char_total * sizeof(char)) + ((option) * Review::getSizeOf(0));
                     files[0].seekg(peso, ios::beg);
 
-                    Review* review = Review::desserializar_review(files[0]);
+                    Review *review = Review::desserializar_review(files[0]);
                     txt_file << "Review: " << option << endl;
                     txt_file << "Id: " << review->getReviewId() << endl;
-                    txt_file <<  "App Version: " << review->getAppVersion() << endl;
-                    txt_file <<  "Data de postagem: " << review->getPostedDate() << endl;
-                    txt_file <<  "Texto: " << review->getReviewText() << endl;
-                    txt_file <<  "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
+                    txt_file << "App Version: " << review->getAppVersion() << endl;
+                    txt_file << "Data de postagem: " << review->getPostedDate() << endl;
+                    txt_file << "Texto: " << review->getReviewText() << endl;
+                    txt_file << "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
                     files[1].clear();
                     files[0].clear();
                 }
                 txt_file.close();
-            } else{
+            } else {
                 cout << "resposta invalida!" << endl;
             }
             break;
         }
 
-        case 3:
+        case 3: {
+
+
             cout << "Numero de reviews desejada para importacao: " << endl;
             int n;
             cin >> n;
@@ -236,7 +284,7 @@ void selecionar(int selecao, ifstream* files, string path){
             //variavel para cronometrar o tempo de execucao
             auto start = high_resolution_clock::now();
 
-            ReviewPtr* review_list = importarBinario(n, files);
+            ReviewPtr *review_list = importarBinario(n, files);
 
             //cronometrando o tempo de execucao
             auto stop = high_resolution_clock::now();
@@ -248,7 +296,7 @@ void selecionar(int selecao, ifstream* files, string path){
             //chmando função de quicksort
             int movimentacoes = 0;
             int comparacoes = 0;
-            quicksort(review_list, 0, n-1, &movimentacoes, &comparacoes);
+            quicksort(review_list, 0, n - 1, &movimentacoes, &comparacoes);
 
             //cronometrando o tempo de execucao
             stop = high_resolution_clock::now();
@@ -257,10 +305,58 @@ void selecionar(int selecao, ifstream* files, string path){
             cout << "movimentacoes " << movimentacoes << endl;
             cout << "comparacoes " << comparacoes << endl;
 
-            delete [] review_list;
+            delete[] review_list;
 
             break;
-    }
+        }
+
+        case 4: {
+
+            cout << "Numero de reviews desejada para importacao: " << endl;
+            int n;
+            cin >> n;
+
+            //variavel para cronometrar o tempo de execucao
+            auto start = high_resolution_clock::now();
+
+            ReviewPtr *review_list = importarBinario(n, files);
+
+            //cronometrando o tempo de execucao
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo da importação: " << duration.count() / pow(10, 6) << " seconds" << endl;
+
+            //chmando função de heapsort
+            int movimentacoes = 0;
+            int comparacoes = 0;
+
+            start = high_resolution_clock::now();
+
+            heapSort(review_list, n - 1, &movimentacoes, &comparacoes);
+
+            //cronometrando o tempo de execucao
+            stop = high_resolution_clock::now();
+            duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo da execução do heapsort: " << duration.count() / pow(10, 6) << " seconds" << endl;
+            cout << "movimentacoes " << movimentacoes << endl;
+            cout << "comparacoes " << comparacoes << endl;
+
+
+            for(int i = 0; i <n; i++){
+                if(review_list[i]->getUpvotes() != 0){
+                    cout << review_list[i]->getUpvotes() << " ";
+                }
+            }
+
+            //cronometrando o tempo de execucao
+            stop = high_resolution_clock::now();
+            duration = duration_cast<microseconds>(stop - start);
+
+            break;
+        }
+
+        }
+
 }
 
 int mainMenu(ifstream* files, string path){
