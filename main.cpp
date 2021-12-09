@@ -164,19 +164,28 @@ ReviewPtr* importarBinario(int n, ifstream* files){
     files[1].seekg(0, ios::beg);
     int reviews = size/sizeof(int);
 
+
+
+    int teste = 0;
+    int teste2 = 0;
+
+
     //for loop principal
     if(n <= reviews){
 
         //alocando array de reviews
+        int* random_list = new int[n];
         ReviewPtr* review_list = new ReviewPtr[n];
         for (int i = 0; i < n; ++i) {
             review_list[i] = new Review();
+            random_list[i] = int(rand() % reviews);
         }
+        quicksortTeste(random_list, 0, n-1, &teste, &teste2);
 
         for(int i = 0; i < n; i++){
 
             //gerando numero da review e desserializando a review respectiva utilizando o sistema de index
-            int random = rand();
+            int random = random_list[i];
             double option = int(random % reviews);
             files[1].seekg((option) * sizeof(int), ios::beg);
             int char_total = Review::desserializar_int(files[1]);
@@ -347,66 +356,6 @@ void selecionar(int selecao, ifstream* files, string path){
 
         case 4: {
 
-            files[0].seekg(0, ios::beg);
-
-            //setando posicoes no binario e descobrindo o numero total de reviews
-            files[1].seekg(0, ios::end);
-            int size = files[1].tellg();
-            files[1].seekg(0, ios::beg);
-            int reviews = size/sizeof(int);
-
-            files[1].clear();
-            files[0].clear();
-
-
-            auto start2 = high_resolution_clock::now();
-
-            ReviewPtr* review_list2 = new ReviewPtr[1000000];
-            int* random_list = new int[1000000];
-            for (int i = 0; i < 1000000; ++i) {
-                review_list2[i] = new Review();
-                random_list[i] = int(rand() % reviews);
-            }
-
-            int teste = 0;
-            int teste2 = 0;
-            quicksortTeste(random_list, 0, 1000000-1, &teste, &teste2);
-
-            //cronometrando o tempo de execucao
-            auto stop2 = high_resolution_clock::now();
-            auto duration2 = duration_cast<microseconds>(stop2 - start2);
-            cout << "Tempo para criar o array: " << duration2.count() / pow(10, 6) << " seconds" << endl;
-
-
-            start2 = high_resolution_clock::now();
-
-            for(int i = 0; i < 1000000; i++){
-                //gerando numero da review e desserializando a review respectiva utilizando o sistema de index
-                int random = random_list[i];
-                double option = int(random % reviews);
-                files[1].seekg((option) * sizeof(int), ios::beg);
-                int char_total = Review::desserializar_int(files[1]);
-                double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
-                files[0].seekg(peso, ios::beg);
-
-                //lista recebe a review desserializada
-                review_list2[i]->receiveReview(Review::desserializar_review(files[0]));
-
-                //clear nos files
-                files[1].clear();
-                files[0].clear();
-            }
-
-            stop2 = high_resolution_clock::now();
-            duration2 = duration_cast<microseconds>(stop2 - start2);
-            cout << "Tempo para importar o binario: " << duration2.count() / pow(10, 6) << " seconds" << endl;
-
-            for(int i = 0; i < 1000000; i++){
-                cout << review_list2[i]->getUpvotes() << " ";
-            }
-
-            exit(1);
-
             cout << "Numero de reviews desejada para importacao: " << endl;
             int n;
             cin >> n;
@@ -437,11 +386,11 @@ void selecionar(int selecao, ifstream* files, string path){
             cout << "comparacoes " << comparacoes << endl;
 
 
-            for(int i = 0; i <n; i++){
-                if(review_list[i]->getUpvotes() != 0){
-                    cout << review_list[i]->getUpvotes() << " ";
-                }
-            }
+//            for(int i = 0; i <n; i++){
+//                if(review_list[i]->getUpvotes() != 0){
+//                    cout << review_list[i]->getUpvotes() << " ";
+//                }
+//            }
 
             //cronometrando o tempo de execucao
             stop = high_resolution_clock::now();
