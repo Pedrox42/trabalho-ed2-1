@@ -31,12 +31,8 @@ Review::~Review(){
     delete [] posted_date;
 }
 
-<<<<<<< HEAD
 //método para receber todos os atributos da review
-void Review::recieveReview(Review* review){
-=======
 void Review::receiveReview(Review* review){
->>>>>>> teste-eficiencia-importacao
     this->review_id = review->review_id;
     this->review_text = review->review_text;
     this->app_version = review->app_version;
