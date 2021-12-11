@@ -4,17 +4,119 @@
 #include <string.h>
 #include <ctime>
 #include <cmath>
+#include <chrono>
 
 //definindo como constantes os nomes dos arquivos que serão usados (tanto o csv quanto os binários)
 const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
 const string index_name = "index.bin";
+typedef Review* ReviewPtr;
+
+
+using namespace std::chrono;
+
+int heapLeft(int i){
+    return i*2;
+}
+
+int heapRight(int i){
+    return (i*2)+1;
+}
+
+int heapParent(int i){
+    return i/2;
+}
+
+
+//algoritmos de sort
+void maxHeapify(ReviewPtr* review_list, int i, int n, int* movimentacao, int* comparacoes){
+    int l = heapLeft(i);
+    int r = heapRight(i);
+    int m = i;
+
+    (*comparacoes) += 2;
+
+    if(l <= n && review_list[l]->getUpvotes() > review_list[i]->getUpvotes()){
+        m = l;
+    }
+
+    if(r <= n && review_list[r]->getUpvotes() > review_list[m]->getUpvotes()){
+        m = r;
+    }
+
+    if(m != i){
+        (*movimentacao)++;
+        swap(review_list[i], review_list[m]);
+        maxHeapify(review_list, m, n, movimentacao, comparacoes);
+    }
+}
+
+void buildMaxHeap(ReviewPtr* review_list, int n, int* movimentacao, int* comparacoes){
+    for(int i = n/2; i >= 0; i--){
+        maxHeapify(review_list, i, n, movimentacao, comparacoes);
+    }
+}
+
+void heapSort(ReviewPtr* review_list, int n, int* movimentacao, int* comparacoes){
+    buildMaxHeap(review_list, n, movimentacao, comparacoes);
+    for(int i = n; i > 0; i--){
+        swap(review_list[0], review_list[i]);
+        maxHeapify(review_list, 0, i-1, movimentacao, comparacoes);
+    }
+}
+
+int medianaDeTres(ReviewPtr* review_list, int a, int b, int c) {
+    if ( (review_list[a]->getUpvotes() > review_list[b]->getUpvotes()) ^ (review_list[a]->getUpvotes() > review_list[c]->getUpvotes()) )
+        return a;
+    else if ( (review_list[b]->getUpvotes() < review_list[a]->getUpvotes()) ^ (review_list[b]->getUpvotes() < review_list[c]->getUpvotes()) )
+        return b;
+    else
+        return c;
+}
+
+int particionamento(ReviewPtr* review_list, int p, int q, int* movimentacao, int* comparacoes){
+    //declaraçoes das variaveis com pivo sendo o ponto mais a direita
+
+    int pivo = medianaDeTres(review_list, p, int((p+q)/2), q );
+    int i = p;
+    int j = q;
+
+    (*movimentacao)++;
+    swap(review_list[pivo], review_list[q]);
+    pivo = q;
+
+    //loop principal de comparacoes
+    do {
+        //levando em conta as comparacoes que serão falsas
+        (*comparacoes) += 2;
+        while(review_list[i]->getUpvotes() < review_list[pivo]->getUpvotes()) { i++; (*comparacoes)++; }
+        while(review_list[j]->getUpvotes() > review_list[pivo]->getUpvotes()) { j--; (*comparacoes)++; }
+        if(i <= j){
+            //fazendo a troca das posicoes
+            swap(review_list[i], review_list[j]);
+            (*movimentacao)++;
+            i++;
+            j--;
+        }
+    } while(i <= j);
 
 
 
+    return j;
+}
 
+void quicksort(ReviewPtr* review_list, int p, int r, int* movimentacao, int* comparacoes){
+    //caso os valores recebidos sejam invalidos ou iguais
+    if(p < r){
+        //recebendo o pivo
+        int q = particionamento(review_list, p, r, movimentacao, comparacoes);
 
-//funcao responsavel por apresentar o menu de opcoes
+        //aplicando quicksort nos vetores resultantes
+        quicksort(review_list, p, q, movimentacao, comparacoes);
+        quicksort(review_list, q+1, r, movimentacao, comparacoes);
+    }
+}
+
 int menu(){
     int selecao;
 
@@ -23,6 +125,8 @@ int menu(){
     cout << "----" << endl;
     cout << "[1] acessaRegistro(i)" << endl;
     cout << "[2] testeImportacao()" << endl;
+    cout << "[3] quicksort" << endl;
+    cout << "[4] heapsort" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -30,21 +134,52 @@ int menu(){
     return selecao;
 }
 
-//funcao responsavel por receber o resultado da selecao e aplicar o comando respectivo
+ReviewPtr* importarBinario(int n, ifstream* files){
+    files[0].seekg(0, ios::beg);
+
+    //setando posicoes no binario e descobrindo o numero total de reviews
+    files[1].seekg(0, ios::end);
+    int size = files[1].tellg();
+    files[1].seekg(0, ios::beg);
+    int reviews = size/sizeof(int);
+
+    if(n <= reviews){
+
+        ReviewPtr* big_review_list = new ReviewPtr[reviews];
+        for (int i = 0; i < reviews; i++) {
+            big_review_list [i] = new Review();
+        }
+
+        for(int i = 0; i < reviews; i++){
+            big_review_list[i]->receiveReview(Review::desserializar_review(files[0]));
+        }
+
+        ReviewPtr* small_review_list = new ReviewPtr[n];
+        for (int i = 0; i < n; i++) {
+            small_review_list[i] = big_review_list[int(rand() % reviews)];
+        }
+
+        return small_review_list;
+
+    } else{
+        cout << "Erro: valor maior do que o numero de reviews!" << endl;
+        return nullptr;
+    }
+
+}
+
+
 void selecionar(int selecao, ifstream* files, string path){
 
-    switch (selecao)
-    {
+    switch (selecao) {
         //Sair
-        case 0:
-        {
+        case 0: {
             cout << "Saindo!" << endl;
             exit(0);
             break;
         }
-        //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
-        case 1:
-        {
+            //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
+        case 1: {
             //binario no incio
             files[0].seekg(0, ios::beg);
 
@@ -53,21 +188,21 @@ void selecionar(int selecao, ifstream* files, string path){
             int size = files[1].tellg(); //usando metodo tellg para pegar a posição do caractere atual e isso retorna o tamanho do binario que possui apenas os indices dos reviews pois foi procurado o ultimo caracter usando seekg() passando ios::end como parametro
             files[1].seekg(0, ios::beg);
 
-            int reviews = size/sizeof(int); //divide o tamanho do arquivo binario dos indices pelo tamanho de um inteiro para saber quantas reviews tem no binario
+            int reviews = size / sizeof(int);
 
             cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
 
 
             double chosen = 0;
-            cin >> chosen; //review escolhida pelo usuario
-            if(chosen > 0 && chosen <= reviews){ //verificando se o indice da review eh valido
-                files[1].seekg((chosen-1) * sizeof(int), ios::beg); //pegando a posicao do review escolhido no binario
+            cin >> chosen;
+            if (chosen > 0 && chosen <= reviews) {
+                files[1].seekg((chosen - 1) * sizeof(int), ios::beg);
                 int char_total = Review::desserializar_int(files[1]);
-                double peso = ( char_total*sizeof(char) ) + ( (chosen-1) * Review::getSizeOf(0) );
+                double peso = (char_total * sizeof(char)) + ((chosen - 1) * Review::getSizeOf(0));
                 cout << "peso de leitura: " << endl;
-                files[0].seekg(peso, ios::beg); //buscar no arquivo contendo as reviews pelo peso de leitura no arquivo com os indices do indice pedido pelo usuario 
-                Review* review = Review::desserializar_review(files[0]); //usa metodo desserializar para pegar review no binario e poder processar pelo codigo c++
-                review->print(); //imprime review
+                files[0].seekg(peso, ios::beg);
+                Review *review = Review::desserializar_review(files[0]);
+                review->print();
                 files[1].clear();
                 files[0].clear(); //limpa variaveis de arquivos
             } else { //caso a review nao seja valida e nao esteja presente no range de reviews que estao no binario
@@ -77,8 +212,7 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 //        Note que a função testeImportacao() é apenas uma função de teste.
 //         O programa deve ser capaz de importar registros do arquivo para quaisquer valores de N, sem erros e sem gerar exceções.
-        case 2:
-        {
+        case 2: {
             //binario no incio
             files[0].seekg(0, ios::beg);
 
@@ -87,7 +221,7 @@ void selecionar(int selecao, ifstream* files, string path){
             int size = files[1].tellg(); //usando metodo tellg para pegar a posição do caractere atual e isso retorna o tamanho do binario que possui apenas os indices dos reviews pois foi procurado o ultimo caracter usando seekg() passando ios::end como parametro
             files[1].seekg(0, ios::beg);
 
-            int reviews = size/sizeof(int); //divide o tamanho do arquivo binario dos indices pelo tamanho de um inteiro para saber quantas reviews tem no binario
+            int reviews = size / sizeof(int);
 
             cout << "qual review voce quer acessar de: " << reviews << " reviews" << endl;
             cout << "escolha uma das opcoes: " << endl;
@@ -95,55 +229,142 @@ void selecionar(int selecao, ifstream* files, string path){
             cout << "[2] 100 reviews sejam salvas para o arquvio output.txt" << endl;
             int resposta;
             int n = 0;
-            cin >> resposta; //recebe resposta do usuario sobre apresentar 10 reviews no console ou salvar 100 em um arquivo
-            if(resposta == 1){ //caso o usuario tenha escolhido 10 reviews no console
+            cin >> resposta;
+            if (resposta == 1) {
                 n = 10;
-                for(int i = 0; i < n; i++) { //for com 10 iterações
-                    int random = rand(); //seleciona int randomico
-                    double option = int(random % reviews); //garantir que o int seja menor do que o numero de reviews
-                    files[1].seekg((option) * sizeof(int), ios::beg); //pegando a posicao do review sorteado no binario
+                for (int i = 0; i < n; i++) {
+                    int random = rand();
+                    double option = int(random % reviews);
+                    files[1].seekg((option) * sizeof(int), ios::beg);
                     int char_total = Review::desserializar_int(files[1]);
-                    double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
-                    files[0].seekg(peso, ios::beg); //buscar no arquivo contendo as reviews pelo peso de leitura no arquivo com os indices do indice pedido pelo usuario 
-                    Review* review = Review::desserializar_review(files[0]); //usa metodo desserializar para pegar review no binario e poder processar pelo codigo c++
-                    review->print(); //imprime a review no console
+                    double peso = (char_total * sizeof(char)) + ((option) * Review::getSizeOf(0));
+                    files[0].seekg(peso, ios::beg);
+                    Review *review = Review::desserializar_review(files[0]);
+                    review->print();
                     files[1].clear();
                     files[0].clear(); //limpa arquivos
                 }
 
-            } else if(resposta == 2) { //caso o usuario tenha escolhido 100 reviews no console
+            } else if (resposta == 2) {
                 n = 100;
                 //cria arquivo de texto para ser processado
                 ofstream txt_file; 
                 txt_file.open((path + "output.txt"), ios::out | ios::trunc);
 
-                for(int i = 0; i < n; i++){ //for com 100 iterações
-                    int random = rand(); //seleciona int randomico
-                    double option = int(random % reviews); //garantir que o int seja menor do que o numero de reviews
-                    files[1].seekg((option) * sizeof(int), ios::beg); //pegando a posicao do review sorteado no binario
+                for (int i = 0; i < n; i++) {
+                    int random = rand();
+                    double option = int(random % reviews);
+                    files[1].seekg((option) * sizeof(int), ios::beg);
                     int char_total = Review::desserializar_int(files[1]);
-                    double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
-                    files[0].seekg(peso, ios::beg); //buscar no arquivo contendo as reviews pelo peso de leitura no arquivo com os indices do indice pedido pelo usuario 
+                    double peso = (char_total * sizeof(char)) + ((option) * Review::getSizeOf(0));
+                    files[0].seekg(peso, ios::beg);
 
-                    Review* review = Review::desserializar_review(files[0]); //usa metodo desserializar para pegar review no binario e poder processar pelo codigo c++
-                    //escreve no arquivo as informações de cada review
+                    Review *review = Review::desserializar_review(files[0]);
                     txt_file << "Review: " << option << endl;
                     txt_file << "Id: " << review->getReviewId() << endl;
-                    txt_file <<  "App Version: " << review->getAppVersion() << endl;
-                    txt_file <<  "Data de postagem: " << review->getPostedDate() << endl;
-                    txt_file <<  "Texto: " << review->getReviewText() << endl;
-                    txt_file <<  "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
-                    //limpa variaveis
+                    txt_file << "App Version: " << review->getAppVersion() << endl;
+                    txt_file << "Data de postagem: " << review->getPostedDate() << endl;
+                    txt_file << "Texto: " << review->getReviewText() << endl;
+                    txt_file << "Upvotes: " << to_string(review->getUpvotes()) << endl << endl;
                     files[1].clear();
                     files[0].clear();
                 }
                 txt_file.close();
-            } else{ //caso a resposta seja diferente de 1 ou 2
+            } else {
                 cout << "resposta invalida!" << endl;
             }
             break;
         }
-    }
+
+        case 3: {
+
+
+            cout << "Numero de reviews desejada para importacao: " << endl;
+            int n;
+            cin >> n;
+
+            //variavel para cronometrar o tempo de execucao
+            auto start = high_resolution_clock::now();
+
+            ReviewPtr *review_list = importarBinario(n, files);
+
+            //cronometrando o tempo de execucao
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo da importação: " << duration.count() / pow(10, 6) << " seconds" << endl;
+
+            start = high_resolution_clock::now();
+
+            //chmando função de quicksort
+            int movimentacoes = 0;
+            int comparacoes = 0;
+            quicksort(review_list, 0, n - 1, &movimentacoes, &comparacoes);
+
+            //cronometrando o tempo de execucao
+            stop = high_resolution_clock::now();
+            duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo da execução do quicksort: " << duration.count() / pow(10, 6) << " seconds" << endl;
+            cout << "movimentacoes " << movimentacoes << endl;
+            cout << "comparacoes " << comparacoes << endl;
+
+            for(int i = 0; i <n; i++){
+                if(review_list[i]->getUpvotes() != 0){
+                    cout << review_list[i]->getUpvotes() << " ";
+                }
+            }
+
+            delete[] review_list;
+
+            break;
+        }
+
+        case 4: {
+
+            cout << "Numero de reviews desejada para importacao: " << endl;
+            int n;
+            cin >> n;
+
+            //variavel para cronometrar o tempo de execucao
+            auto start = high_resolution_clock::now();
+
+            ReviewPtr *review_list = importarBinario(n, files);
+
+            //cronometrando o tempo de execucao
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo da importação: " << duration.count() / pow(10, 6) << " seconds" << endl;
+
+            //chmando função de heapsort
+            int movimentacoes = 0;
+            int comparacoes = 0;
+
+            start = high_resolution_clock::now();
+
+            heapSort(review_list, n - 1, &movimentacoes, &comparacoes);
+
+            //cronometrando o tempo de execucao
+            stop = high_resolution_clock::now();
+            duration = duration_cast<microseconds>(stop - start);
+            cout << "Tempo da execução do heapsort: " << duration.count() / pow(10, 6) << " seconds" << endl;
+            cout << "movimentacoes " << movimentacoes << endl;
+            cout << "comparacoes " << comparacoes << endl;
+
+
+//            for(int i = 0; i <n; i++){
+//                if(review_list[i]->getUpvotes() != 0){
+//                    cout << review_list[i]->getUpvotes() << " ";
+//                }
+//            }
+
+            //cronometrando o tempo de execucao
+            stop = high_resolution_clock::now();
+            duration = duration_cast<microseconds>(stop - start);
+
+            break;
+        }
+
+        }
+
 }
 
 //funcao para continuar apresentando o menu até o usuário digitar 0, o botão de sair do menu
@@ -265,12 +486,6 @@ Review* buildReview(char* buffer, int linesize, int* char_counter)
         cout << "upvotes " << upvotes << endl;
         //exit(1);
     }
-
-    // delete [] id;
-    // delete [] review_text;
-    // delete [] app_version;
-    // delete [] posted_date;
-    // delete [] upvotes;
 
     return review;
 }
