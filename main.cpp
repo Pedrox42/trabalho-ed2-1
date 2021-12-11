@@ -81,6 +81,7 @@ int particionamento(ReviewPtr* review_list, int p, int q, int* movimentacao, int
     int i = p;
     int j = q;
 
+    (*movimentacao)++;
     swap(review_list[pivo], review_list[q]);
     pivo = q;
 
