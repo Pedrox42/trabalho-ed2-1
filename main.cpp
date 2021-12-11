@@ -65,11 +65,24 @@ void heapSort(ReviewPtr* review_list, int n, int* movimentacao, int* comparacoes
     }
 }
 
+int medianaDeTres(ReviewPtr* review_list, int a, int b, int c) {
+    if ( (review_list[a]->getUpvotes() > review_list[b]->getUpvotes()) ^ (review_list[a]->getUpvotes() > review_list[c]->getUpvotes()) )
+        return a;
+    else if ( (review_list[b]->getUpvotes() < review_list[a]->getUpvotes()) ^ (review_list[b]->getUpvotes() < review_list[c]->getUpvotes()) )
+        return b;
+    else
+        return c;
+}
+
 int particionamento(ReviewPtr* review_list, int p, int q, int* movimentacao, int* comparacoes){
     //declaraçoes das variaveis com pivo sendo o ponto mais a direita
-    int pivo = q;
+
+    int pivo = medianaDeTres(review_list, p, int((p+q)/2), q );
     int i = p;
     int j = q;
+
+    swap(review_list[pivo], review_list[q]);
+    pivo = q;
 
     //loop principal de comparacoes
     do {
@@ -85,29 +98,9 @@ int particionamento(ReviewPtr* review_list, int p, int q, int* movimentacao, int
             j--;
         }
     } while(i <= j);
-    return j;
-}
 
-int particionamentoTeste(int* review_list, int p, int q, int* movimentacao, int* comparacoes){
-    //declaraçoes das variaveis com pivo sendo o ponto mais a direita
-    int pivo = q;
-    int i = p;
-    int j = q;
 
-    //loop principal de comparacoes
-    do {
-        //levando em conta as comparacoes que serão falsas
-        (*comparacoes) += 2;
-        while(review_list[i] < review_list[pivo]) { i++; (*comparacoes)++; }
-        while(review_list[j] > review_list[pivo]) { j--; (*comparacoes)++; }
-        if(i <= j){
-            //fazendo a troca das posicoes
-            swap(review_list[i], review_list[j]);
-            (*movimentacao)++;
-            i++;
-            j--;
-        }
-    } while(i <= j);
+
     return j;
 }
 
@@ -122,22 +115,6 @@ void quicksort(ReviewPtr* review_list, int p, int r, int* movimentacao, int* com
         quicksort(review_list, q+1, r, movimentacao, comparacoes);
     }
 }
-
-void quicksortTeste(int* review_list, int p, int r, int* movimentacao, int* comparacoes){
-    //caso os valores recebidos sejam invalidos ou iguais
-    if(p < r){
-        //recebendo o pivo
-        int q = particionamentoTeste(review_list, p, r, movimentacao, comparacoes);
-
-        //aplicando quicksort nos vetores resultantes
-        quicksortTeste(review_list, p, q, movimentacao, comparacoes);
-        quicksortTeste(review_list, q+1, r, movimentacao, comparacoes);
-    }
-}
-
-
-
-
 
 int menu(){
     int selecao;
@@ -327,6 +304,12 @@ void selecionar(int selecao, ifstream* files, string path){
             cout << "Tempo da execução do quicksort: " << duration.count() / pow(10, 6) << " seconds" << endl;
             cout << "movimentacoes " << movimentacoes << endl;
             cout << "comparacoes " << comparacoes << endl;
+
+            for(int i = 0; i <n; i++){
+                if(review_list[i]->getUpvotes() != 0){
+                    cout << review_list[i]->getUpvotes() << " ";
+                }
+            }
 
             delete[] review_list;
 
