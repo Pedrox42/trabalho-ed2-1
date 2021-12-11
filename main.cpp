@@ -164,44 +164,23 @@ ReviewPtr* importarBinario(int n, ifstream* files){
     files[1].seekg(0, ios::beg);
     int reviews = size/sizeof(int);
 
-
-
-    int teste = 0;
-    int teste2 = 0;
-
-
-    //for loop principal
     if(n <= reviews){
 
-        //alocando array de reviews
-        int* random_list = new int[n];
-        ReviewPtr* review_list = new ReviewPtr[n];
-        for (int i = 0; i < n; ++i) {
-            review_list[i] = new Review();
-            random_list[i] = int(rand() % reviews);
-        }
-        quicksortTeste(random_list, 0, n-1, &teste, &teste2);
-
-        for(int i = 0; i < n; i++){
-
-            //gerando numero da review e desserializando a review respectiva utilizando o sistema de index
-            int random = random_list[i];
-            double option = int(random % reviews);
-            files[1].seekg((option) * sizeof(int), ios::beg);
-            int char_total = Review::desserializar_int(files[1]);
-            double peso = ( char_total*sizeof(char) ) + ( (option) * Review::getSizeOf(0) );
-            files[0].seekg(peso, ios::beg);
-
-            //lista recebe a review desserializada
-            review_list[i]->receiveReview(Review::desserializar_review(files[0]));
-
-            //clear nos files
-            files[1].clear();
-            files[0].clear();
-
+        ReviewPtr* big_review_list = new ReviewPtr[reviews];
+        for (int i = 0; i < reviews; i++) {
+            big_review_list [i] = new Review();
         }
 
-        return review_list;
+        for(int i = 0; i < reviews; i++){
+            big_review_list[i]->receiveReview(Review::desserializar_review(files[0]));
+        }
+
+        ReviewPtr* small_review_list = new ReviewPtr[n];
+        for (int i = 0; i < n; i++) {
+            small_review_list[i] = big_review_list[int(rand() % reviews)];
+        }
+
+        return small_review_list;
 
     } else{
         cout << "Erro: valor maior do que o numero de reviews!" << endl;
@@ -510,12 +489,6 @@ Review* buildReview(char* buffer, int linesize, int* char_counter)
         cout << "upvotes " << upvotes << endl;
         exit(1);
     }
-
-    // delete [] id;
-    // delete [] review_text;
-    // delete [] app_version;
-    // delete [] posted_date;
-    // delete [] upvotes;
 
     return review;
 }
