@@ -26,7 +26,7 @@ public:
 
     static void quicksort(ReviewPtr *review_list, int p, int r, int *movimentacao, int *comparacoes);
 
-private:
+    static void countingSort(ReviewPtr *review_list, int tamanho, int max, int *movimentacao, float *memoria_alocada);
 };
 
 

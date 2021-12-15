@@ -1,4 +1,6 @@
+#include <iostream>
 #include "Sorts.h"
+using namespace std;
 
 int Sorts::heapLeft(int i){
     return i*2;
@@ -98,4 +100,41 @@ void Sorts::quicksort(ReviewPtr* review_list, int p, int r, int* movimentacao, i
         quicksort(review_list, p, q, movimentacao, comparacoes);
         quicksort(review_list, q+1, r, movimentacao, comparacoes);
     }
+}
+
+void Sorts::countingSort(ReviewPtr review_list[], int n, int max, int *movimentacao, float *memoria_alocada)
+{
+    //Array para guardar a lista reordenada
+    ReviewPtr* output = new ReviewPtr[n];
+
+    //Cria para fazer a contagem usada no algoritimo
+    int lastIndex = max + 1;
+    int *count = new int[lastIndex];
+    //Instancia todos os valors como 0
+    for(int i = 0; i < lastIndex; i++){
+        count[i] = 0;
+    }
+    //Laço para guardar a contagem total de cada um dos upvotes no indice correspondente
+    for (int i = 0; i < n; i++) {
+        count[review_list[i]->getUpvotes()]++;
+    }
+    //Corrige o valor do vetor de count para o indice no vetor output
+    for (int i = 1; i < lastIndex; i++) {
+        count[i] += count[i - 1];
+    }
+    //Coloca os valores nas posicoes corretas do vetor output
+    for (int i = 0; i < n; i++) {
+        output[count[review_list[i]->getUpvotes()] - 1] = review_list[i];
+        (*movimentacao)++;
+        count[review_list[i]->getUpvotes()]--;
+    }
+    //Copia o vetor output ja ordenado para o vetor review_list
+    for (int i = 0; i < n; i++) {
+        review_list[i] = output[i];
+        (*movimentacao)++;
+    }
+
+    delete [] output;
+
+    (*memoria_alocada) = (lastIndex) * (sizeof(int)) + (n * sizeof(ReviewPtr));
 }

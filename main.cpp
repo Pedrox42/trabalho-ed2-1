@@ -28,7 +28,8 @@ int menu(){
     cout << "[1] acessaRegistro(i)" << endl;
     cout << "[2] testeImportacao()" << endl;
     cout << "[3] quicksort" << endl;
-    cout << "[4] heapsort" << endl;
+    cout << "[4] heapSort" << endl;
+    cout << "[5] countingSort" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -36,14 +37,14 @@ int menu(){
     return selecao;
 }
 
-ReviewPtr* cronometrarReviewList(ifstream* files, int* n){
+ReviewPtr* cronometrarReviewList(ifstream* files, int* n, ReviewPtr *big_review_list, int reviews){
     cout << "Numero de reviews desejada para importacao: " << endl;
     cin >> *n;
 
     //variavel para cronometrar o tempo de execucao
     auto start = high_resolution_clock::now();
 
-    ReviewPtr *review_list = Process::importarBinario(*n, files);
+    ReviewPtr *review_list = Process::importarReviewsRandomicas(big_review_list, reviews, *n);
 
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
@@ -72,7 +73,7 @@ void cronometrarQuickSort(ReviewPtr* review_list, int n){
 void cronometrarHeapSort(ReviewPtr* review_list, int n){
     auto start = high_resolution_clock::now();
 
-    //chmando função de quicksort
+    //chmando função de heapSort
     int movimentacoes = 0;
     int comparacoes = 0;
 
@@ -81,13 +82,34 @@ void cronometrarHeapSort(ReviewPtr* review_list, int n){
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Tempo da execução do quicksort: " << duration.count() / pow(10, 6) << " seconds" << endl;
+    cout << "Tempo da execução do heapSort: " << duration.count() / pow(10, 6) << " seconds" << endl;
     cout << "movimentacoes " << movimentacoes << endl;
     cout << "comparacoes " << comparacoes << endl;
 }
 
+void cronometrarCountingSort(ReviewPtr* review_list, int n, int max){
+    auto start = high_resolution_clock::now();
+
+//    chmando função de quicksort
+    int movimentacoes = 0;
+    int comparacoes = 0;
+    float memoria_alocada = 0;
+
+    Sorts::countingSort(review_list, n, max, &movimentacoes, &memoria_alocada);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Tempo da execução do countingSort: " << duration.count() / pow(10, 6) << " seconds" << endl;
+    cout << "movimentacoes " << movimentacoes << endl;
+    cout << "comparacoes " << comparacoes << endl;
+    cout << "memoria adicional alocada " << memoria_alocada/(1024*1024) << " MB" << endl;
+}
+
 void selecionar(int selecao, ifstream* files, string path){
 
+    int reviews = 0;
+    ReviewPtr* big_review_list = Process::importarBinario(files, &reviews);
     switch (selecao) {
         //Sair
         case 0: {
@@ -111,7 +133,7 @@ void selecionar(int selecao, ifstream* files, string path){
 
             int n = 0;
 
-            ReviewPtr *review_list =  cronometrarReviewList(files, &n);
+            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
 
             cronometrarQuickSort(review_list, n);
 
@@ -124,7 +146,7 @@ void selecionar(int selecao, ifstream* files, string path){
 
             int n = 0;
 
-            ReviewPtr *review_list =  cronometrarReviewList(files, &n);
+            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
 
             cronometrarHeapSort(review_list, n);
 
@@ -133,8 +155,27 @@ void selecionar(int selecao, ifstream* files, string path){
             break;
 
         }
-    }
 
+        case 5: {
+
+            int n = 0, max = -1;
+
+            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
+
+            for(int i = 0; i < n; i++){
+                if(review_list[i]->getUpvotes() > max){
+                    max = review_list[i]->getUpvotes();
+                }
+            }
+
+            cronometrarCountingSort(review_list, n, max);
+
+            delete[] review_list;
+
+            break;
+
+        }
+    }
 }
 
 //funcao para continuar apresentando o menu até o usuário digitar 0, o botão de sair do menu

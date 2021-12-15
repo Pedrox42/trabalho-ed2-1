@@ -2,37 +2,40 @@
 #include <fstream>
 #include <iostream>
 
-ReviewPtr* Process::importarBinario(int n, ifstream* files){
+ReviewPtr* Process::importarBinario(ifstream* files, int *reviews){
     files[0].seekg(0, ios::beg);
 
     //setando posicoes no binario e descobrindo o numero total de reviews
     files[1].seekg(0, ios::end);
     int size = files[1].tellg();
     files[1].seekg(0, ios::beg);
-    int reviews = size/sizeof(int);
+    (*reviews) = size/sizeof(int);
 
-    if(n <= reviews){
+    ReviewPtr* big_review_list = new ReviewPtr[(*reviews)];
+    for (int i = 0; i < (*reviews); i++) {
+        big_review_list [i] = new Review();
+    }
 
-        ReviewPtr* big_review_list = new ReviewPtr[reviews];
-        for (int i = 0; i < reviews; i++) {
-            big_review_list [i] = new Review();
-        }
+    for(int i = 0; i < (*reviews); i++){
+        big_review_list[i]->receiveReview(Review::desserializar_review(files[0]));
+    }
 
-        for(int i = 0; i < reviews; i++){
-            big_review_list[i]->receiveReview(Review::desserializar_review(files[0]));
-        }
+    return big_review_list;
+}
 
-        ReviewPtr* small_review_list = new ReviewPtr[n];
+ReviewPtr* Process::importarReviewsRandomicas(ReviewPtr* big_review_list, int reviews, int n){
+
+    if(n <= reviews) {
+        ReviewPtr *small_review_list = new ReviewPtr[n];
         for (int i = 0; i < n; i++) {
             small_review_list[i] = big_review_list[int(rand() % reviews)];
         }
-
         return small_review_list;
-
     } else{
         cout << "Erro: valor maior do que o numero de reviews!" << endl;
         return nullptr;
     }
+
 }
 
 //funcao responsavel por ler a linha e transforma-la nos dados formatados para os dados normais objeto "Review"
