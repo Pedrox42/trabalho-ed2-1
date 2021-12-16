@@ -16,6 +16,8 @@ class HashEncadeado
         void imprime();
         int getTamanho();
         HashNode *hashRaiz;
+        bool vazia();
+        HashNode* getNode(char* appVersion);
 
 
 private:

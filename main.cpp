@@ -2,6 +2,7 @@
 #include <fstream>
 #include "Review.h"
 #include "HashEncadeado.h"
+#include "Hash.h"
 #include <string.h>
 #include "Sorts.h"
 #include "Process.h"
@@ -31,6 +32,7 @@ int menu(){
     cout << "[3] quicksort" << endl;
     cout << "[4] heapSort" << endl;
     cout << "[5] countingSort" << endl;
+    cout << "[6] Hash" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -175,6 +177,22 @@ void selecionar(int selecao, ifstream* files, string path){
 
             break;
 
+        }
+        case 6: {
+            Hash *hashList = new Hash(1000);
+
+            int n = 0;
+
+            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
+
+            for(int i = 0; i < n; i++) {
+                hashList->inserir(review_list[i]);
+            }
+            hashList->imprime();
+
+            delete[] review_list;
+
+            break;
         }
     }
 }

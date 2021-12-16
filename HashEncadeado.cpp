@@ -45,6 +45,16 @@ bool HashEncadeado::busca(char* appVersion)
     return false;
 }
 
+HashNode* HashEncadeado::getNode(char* appVersion)
+{
+    for(HashNode* node = hashRaiz; node != nullptr; node = node->getProx()) {
+        if(node->compareAppVersion(appVersion)) {
+            return node;
+        }
+    }
+    return nullptr;
+}
+
 int HashEncadeado::getTamanho()
 {
     return this->tamanho;
@@ -58,5 +68,7 @@ void HashEncadeado::imprime()
     }   
 }
 
-
-
+bool HashEncadeado::vazia()
+{
+    return hashRaiz == nullptr;
+}
