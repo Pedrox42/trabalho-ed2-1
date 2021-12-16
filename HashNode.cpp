@@ -4,7 +4,7 @@
 
 HashNode::HashNode(char* appVersion, int frequencia)
 {
-    this->appVersion = new char[version_size];
+    //this->appVersion = new char[version_size];
     this->appVersion = appVersion;
     this->frequencia = frequencia;
 }
@@ -20,16 +20,13 @@ int HashNode::getFrequencia()
 }
 
 bool HashNode::compareAppVersion(char* string1) {
-    if ((string1 == NULL) && (this->appVersion == NULL))
-        return true;
-    if ((string1 == NULL) || (this->appVersion == NULL))
-        return false;
-    while (((*string1) != '\0') && ((*this->appVersion) != '\0') && ((*string1) == (*this->appVersion)))
-    {
-        string1++;
-        this->appVersion++;
+    int i;
+    for(i = 0; string1[i] != '\0'; i++) {
+        if(this->getAppVersion()[i] != string1[i]) {
+            return false;
+        }
     }
-    return ((*string1) == *this->appVersion);
+    return this->getAppVersion()[i] == '\0' && string1[i] == '\0';
 }
 
 
