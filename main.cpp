@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include "Review.h"
+#include "HashEncadeado.h"
 #include <string.h>
 #include "Sorts.h"
 #include "Process.h"
@@ -119,6 +120,13 @@ void selecionar(int selecao, ifstream* files, string path){
         }
             //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
         case 1: {
+            HashEncadeado *hash = new HashEncadeado();
+            char* charArray = ['a', 'm', 'e', 'n', 'd', 'o', 'b', 'o', 'b', 'o', '\0'];
+            char* charArray2 = ['a', 'n', 'd', '4', 'h', 'o', 'b', 'o', 'b', 'o', '\0'];
+            hash->insere(charArray);
+            hash->insere(charArray2);
+            hash->busca(charArray);
+            exit(1);
             Process::acessaRegistro(files);
             break;
         }
