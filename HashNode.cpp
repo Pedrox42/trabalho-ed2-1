@@ -19,17 +19,17 @@ int HashNode::getFrequencia()
     return this->frequencia;
 }
 
-bool compareAppVersion(char* string1) {
+bool HashNode::compareAppVersion(char* string1) {
     if ((string1 == NULL) && (this->appVersion == NULL))
         return true;
     if ((string1 == NULL) || (this->appVersion == NULL))
         return false;
-    while ((string1 != '\0') && (this->appVersion != '\0') && (string1 == this->appVersion))
+    while (((*string1) != '\0') && ((*this->appVersion) != '\0') && ((*string1) == (*this->appVersion)))
     {
         string1++;
         this->appVersion++;
     }
-    return (string1 == *this->appVersion);
+    return ((*string1) == *this->appVersion);
 }
 
 
@@ -48,4 +48,11 @@ void HashNode::setAppVersion(char* appVersion)
     this->appVersion = appVersion;
 }
 
+HashNode* HashNode::getProx(){
+    return this->proximo;
+}
+
+void HashNode::setProx(HashNode *h) {
+    this->proximo = h;
+}
 

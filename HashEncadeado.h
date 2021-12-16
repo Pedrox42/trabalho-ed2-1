@@ -15,9 +15,10 @@ class HashEncadeado
         bool busca(char* appVersion);
         void imprime();
         int getTamanho();
-
-    private:
         HashNode *hashRaiz;
+
+
+private:
         HashNode *hashUltimo;
         int tamanho;
 };

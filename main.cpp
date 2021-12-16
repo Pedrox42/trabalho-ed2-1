@@ -121,11 +121,21 @@ void selecionar(int selecao, ifstream* files, string path){
             //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
         case 1: {
             HashEncadeado *hash = new HashEncadeado();
-            char* charArray = ['a', 'm', 'e', 'n', 'd', 'o', 'b', 'o', 'b', 'o', '\0'];
-            char* charArray2 = ['a', 'n', 'd', '4', 'h', 'o', 'b', 'o', 'b', 'o', '\0'];
+            char* charArray = new char[4];
+            charArray[0] = 'a'; //{'a', 'm', 'e', 'n', 'd', 'o', 'b', 'o', 'b', 'o', '\0'};
+            charArray[1] = 'm';
+            charArray[2] = 'e';
+            charArray[3] = '\0';
+            char* charArray2 = new char[4];
+            charArray2[0] = 'a';
+            charArray2[1] = 'n';
+            charArray2[2] = 'd';
+            charArray2[3] = '\0';
+            //{'a', 'n', 'd', '4', 'h', 'o', 'b', 'o', 'b', 'o', '\0'};
             hash->insere(charArray);
             hash->insere(charArray2);
-            hash->busca(charArray);
+            cout << hash->busca(charArray);
+            hash->imprime();
             exit(1);
             Process::acessaRegistro(files);
             break;

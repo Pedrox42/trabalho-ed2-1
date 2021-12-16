@@ -2,7 +2,7 @@
 #include "HashNode.h"
 #include <fstream>
 #include <iostream>
-
+using namespace std;
 HashEncadeado::HashEncadeado()
 {
     hashRaiz = nullptr;
@@ -26,11 +26,11 @@ void HashEncadeado::insere(char* appVersion)
     h->setProx(nullptr);
     if(tamanho == 0) {
         hashRaiz = h;
-        hashFinal = h;   
+        hashUltimo = h;
     }
     else {
-        hashFinal->setProx(h);
-        hashFinal = h;
+        hashUltimo->setProx(h);
+        hashUltimo = h;
     }
     tamanho++;
 }
@@ -53,8 +53,8 @@ int HashEncadeado::getTamanho()
 void HashEncadeado::imprime()
 {
     for(HashNode* node = hashRaiz; node != nullptr; node = node->getProx()) {
-        cout << "App Version: " << node->appVersion << endl;
-        cout << "Frequencia: " << node->frequencia << endl << endl;
+        cout << "App Version: " << node->getAppVersion() << endl;
+        cout << "Frequencia: " << node->getFrequencia() << endl << endl;
     }   
 }
 

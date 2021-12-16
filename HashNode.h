@@ -7,7 +7,7 @@
 class HashNode
 {
     public:
-        HashNode();
+        HashNode(char* appVersion, int frequencia);
         ~HashNode();
         int getFrequencia();
         char* getAppVersion();
@@ -16,7 +16,7 @@ class HashNode
         void setAppVersion(char* appVersion);
         void setProx(HashNode *h);
         static const int version_size = 21;
-        bool compareAppVersion();
+        bool compareAppVersion(char* string1);
 
     private:
         int frequencia;
