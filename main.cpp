@@ -109,6 +109,26 @@ void cronometrarCountingSort(ReviewPtr* review_list, int n, int max){
     cout << "memoria adicional alocada " << memoria_alocada/(1024*1024) << " MB" << endl;
 }
 
+void cronometrarHash(Hash *hashList, ReviewPtr *review_list, int n){
+
+    int m = 0;
+    cout << "Digite quantas versoes do app devem ser impressas:" << endl;
+    cin >> m;
+
+    auto start = high_resolution_clock::now();
+    //Executando o hash
+    for(int i = 0; i < n; i++) {
+        hashList->inserir(review_list[i]);
+    }
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "Tempo da execução do hash: " << duration.count() / pow(10, 6) << " seconds" << endl;
+    cout << "Versoes mais frequentes do app:"<< endl;
+    hashList->imprime();
+}
+
 void selecionar(int selecao, ifstream* files, string path){
 
     int reviews = 0;
@@ -179,16 +199,15 @@ void selecionar(int selecao, ifstream* files, string path){
 
         }
         case 6: {
-            Hash *hashList = new Hash(1000);
+            Hash *hashList = new Hash(6000);
 
             int n = 0;
 
             ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
 
-            for(int i = 0; i < n; i++) {
-                hashList->inserir(review_list[i]);
-            }
-            hashList->imprime();
+            cronometrarHash(hashList, review_list, n);
+
+//            hashList->imprime();
 
             delete[] review_list;
 

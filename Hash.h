@@ -23,6 +23,7 @@ class Hash
         void colisao();
         int formula(char* array);
         void imprime();
+        void imprimeMaisFrequentes(int m);
 
         static const int version_size = 21;
 };

@@ -76,6 +76,24 @@ void Hash::imprime()
    cout << "Colisoes: " << colisoes << endl;
 }
 
+void Hash::imprimeMaisFrequentes(int m)
+{
+    int numero = 0;
+    int colisoes = 0;
+    for(int i = 0; i < m; i++) {
+        if(!hashList[i]->vazia()) {
+            cout << "Indice: " << i << endl;
+            hashList[i]->imprime();
+            numero += hashList[i]->getTamanho();
+            if(hashList[i]->getTamanho() > 1) {
+                colisoes += hashList[i]->getTamanho() - 1;
+            }
+        }
+    }
+    cout << "Numero total: " << numero << endl;
+    cout << "Colisoes: " << colisoes << endl;
+}
+
 
 
 
