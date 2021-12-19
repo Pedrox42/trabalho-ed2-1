@@ -9,10 +9,7 @@ HashNode::HashNode(char* appVersion, int frequencia)
     this->frequencia = frequencia;
 }
 
-HashNode::~HashNode()
-{
-    delete [] this->appVersion;
-}
+HashNode::~HashNode(){}
 
 int HashNode::getFrequencia()
 {

@@ -214,7 +214,6 @@ void selecionar(int selecao, ifstream* files, string path){
         }
     }
 
-    cout << "deletei!" << endl;
     for(int i = 0; i < reviews; i++){
         delete big_review_list[i];
     }

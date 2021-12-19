@@ -77,6 +77,7 @@ void Hash::imprime()
    cout << "Colisoes: " << colisoes << endl;
 }
 
+//função para imprimir as versoes mais frequentes dos
 void Hash::imprimeMaisFrequentes(int m)
 {
     int tam = 0;
@@ -95,6 +96,7 @@ void Hash::imprimeMaisFrequentes(int m)
     }
 }
 
+//transformando lista hash em array de ints de frequência
 int* Hash::getArrayInt(int* tamanhoArray) {
     (*tamanhoArray) = 0;
 
@@ -119,6 +121,7 @@ int* Hash::getArrayInt(int* tamanhoArray) {
     return arrayInt;
 }
 
+//transformando lista hash em array de char*
 char** Hash::getArrayChar(int* tamanhoArray) {
     (*tamanhoArray) = 0;
 
