@@ -12,12 +12,12 @@ ReviewPtr* Process::importarBinario(ifstream* files, int *reviews){
     (*reviews) = size/sizeof(int);
 
     ReviewPtr* big_review_list = new ReviewPtr[(*reviews)];
-    for (int i = 0; i < (*reviews); i++) {
-        big_review_list [i] = new Review();
-    }
+//    for (int i = 0; i < (*reviews); i++) {
+//        big_review_list [i] = new Review();
+//    }
 
     for(int i = 0; i < (*reviews); i++){
-        big_review_list[i]->receiveReview(Review::desserializar_review(files[0]));
+        big_review_list[i] = Review::desserializar_review(files[0]);
     }
 
     return big_review_list;
@@ -33,7 +33,7 @@ ReviewPtr* Process::importarReviewsRandomicas(ReviewPtr* big_review_list, int re
         return small_review_list;
     } else{
         cout << "Erro: valor maior do que o numero de reviews!" << endl;
-        return nullptr;
+        exit(1);
     }
 
 }

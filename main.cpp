@@ -207,13 +207,19 @@ void selecionar(int selecao, ifstream* files, string path){
 
             cronometrarHash(hashList, review_list, n);
 
-//            hashList->imprime();
-
             delete[] review_list;
+            delete hashList;
 
             break;
         }
     }
+
+    cout << "deletei!" << endl;
+    for(int i = 0; i < reviews; i++){
+        delete big_review_list[i];
+    }
+    delete [] big_review_list;
+
 }
 
 //funcao para continuar apresentando o menu até o usuário digitar 0, o botão de sair do menu
