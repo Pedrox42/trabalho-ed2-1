@@ -43,7 +43,7 @@ Além disto é interessante uma IDE que suporte a linguagem, como [VSCode](https
 
 ### Utilização:
 #### Preparação de ambiente:
-- Após clonar o repositório ou descompactar o .zip enviado, o arquivo CSV contendo as *reviews* a serem lidas deverão estar no diretório a ser passado como argumento. Para compilar, executar o programa e receber a saída esperada, siga as instruções abaixo.
+- Após clonar o repositório ou descompactar o .zip enviado, o arquivo CSV contendo as *reviews* a serem lidas e o input.dat (input.txt) deverão estar no diretório a ser passado como argumento. Para compilar, executar o programa e receber a saída esperada, siga as instruções abaixo.
 
 #### Compilação
 Ainda no terminal, utilize o comando:
@@ -54,8 +54,8 @@ E em seguida:
 ```
 ./trabalhoED2 diretorio/
 ```
-Sendo "diretorio" a pasta onde se encontra o CSV.
+Sendo "diretorio" a pasta onde se encontra o CSV e o input.dat (input.txt).
 
-Quando solicitados, os arquivos de saída serão criados na mesma pasta onde o csv está e no caso da necessidade de pré-tratamento do arquivo CSV, os arquivos binários criados também estarão nessa pasta.
+Quando necessários, os arquivos de saída serão criados na mesma pasta onde o CSV está, sendo esses saida.txt e teste.txt, e no caso da necessidade de pré-tratamento do arquivo CSV, os arquivos binários criados também estarão nessa pasta.
 
 Depois de compilado será mostrado um menu com algumas opções, onde cada uma delas é correspondente a uma das funções, e existe também uma opção para parar de executar o programa.
