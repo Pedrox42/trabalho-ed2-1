@@ -138,3 +138,41 @@ void Sorts::countingSort(ReviewPtr review_list[], int n, int max, int *movimenta
 
     (*memoria_alocada) = (lastIndex) * (sizeof(int)) + (n * sizeof(ReviewPtr));
 }
+
+
+//algoritmos de sort
+void Sorts::maxHeapifyHash(int* arrayInt, char** arrayChar, int i, int n){
+    int l = heapLeft(i);
+    int r = heapRight(i);
+    int m = i;
+
+    if(l <= n && arrayInt[l] > arrayInt[i]){
+        m = l;
+    }
+
+    if(r <= n && arrayInt[r] > arrayInt[m]){
+        m = r;
+    }
+
+    if(m != i){
+        swap(arrayInt[i], arrayInt[m]);
+        swap(arrayChar[i], arrayChar[m]);
+        maxHeapifyHash(arrayInt, arrayChar, m, n);
+    }
+}
+
+void Sorts::buildMaxHeapHash(int* arrayInt, char** arrayChar, int n){
+    for(int i = n/2; i >= 0; i--){
+        maxHeapifyHash(arrayInt, arrayChar, i, n);
+    }
+}
+
+void Sorts::heapSortHash(int* arrayInt, char** arrayChar, int n){
+    buildMaxHeapHash(arrayInt, arrayChar, n);
+    for(int i = n; i > 0; i--){
+        swap(arrayInt[0], arrayInt[i]);
+        swap(arrayChar[0], arrayChar[i]);
+        maxHeapifyHash(arrayInt, arrayChar, 0, i-1);
+    }
+}
+

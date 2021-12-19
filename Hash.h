@@ -24,7 +24,8 @@ class Hash
         int formula(char* array);
         void imprime();
         void imprimeMaisFrequentes(int m);
-
+        int* getArrayInt(int* tamanhoArray);
+        char** getArrayChar(int* tamanhoArray);
         static const int version_size = 21;
 };
 

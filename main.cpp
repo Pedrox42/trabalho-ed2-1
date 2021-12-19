@@ -125,8 +125,8 @@ void cronometrarHash(Hash *hashList, ReviewPtr *review_list, int n){
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
     cout << "Tempo da execução do hash: " << duration.count() / pow(10, 6) << " seconds" << endl;
-    cout << "Versoes mais frequentes do app:"<< endl;
-    hashList->imprime();
+//    cout << "Versoes mais frequentes do app:"<< endl;
+    hashList->imprimeMaisFrequentes(m);
 }
 
 void selecionar(int selecao, ifstream* files, string path){

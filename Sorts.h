@@ -27,6 +27,12 @@ public:
     static void quicksort(ReviewPtr *review_list, int p, int r, int *movimentacao, int *comparacoes);
 
     static void countingSort(ReviewPtr *review_list, int tamanho, int max, int *movimentacao, float *memoria_alocada);
+
+    static void buildMaxHeapHash(int *arrayInt, char **arrayChar, int n);
+
+    static void heapSortHash(int *arrayInt, char **arrayChar, int n);
+
+    static void maxHeapifyHash(int *arrayInt, char **arrayChar, int i, int n);
 };
 
 

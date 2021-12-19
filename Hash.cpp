@@ -1,6 +1,7 @@
 #include "HashEncadeado.h"
 #include "HashNode.h"
 #include "Hash.h"
+#include "Sorts.h"
 #include <fstream>
 #include <iostream>
 
@@ -78,23 +79,66 @@ void Hash::imprime()
 
 void Hash::imprimeMaisFrequentes(int m)
 {
-    int numero = 0;
-    int colisoes = 0;
-    for(int i = 0; i < m; i++) {
+    int tam = 0;
+    int* arrayInt = this->getArrayInt(&tam);
+    char** arrayChar =  this->getArrayChar(&tam);
+
+    Sorts::heapSortHash(arrayInt, arrayChar, tam - 1);
+    if(m <= tam) {
+        for (int i = tam - 1; tam-i <= m; i--) {
+            cout << "Versao: " << arrayChar[i] << endl;
+            cout << "Frequencia: " << arrayInt[i] << endl;
+        }
+    }
+     else{
+        cout <<  "Erro: o numero pedido eh maior que o numero de versoes!" << endl;
+    }
+}
+
+int* Hash::getArrayInt(int* tamanhoArray) {
+    (*tamanhoArray) = 0;
+
+    for(int i = 0; i < tamanho; i++) {
         if(!hashList[i]->vazia()) {
-            cout << "Indice: " << i << endl;
-            hashList[i]->imprime();
-            numero += hashList[i]->getTamanho();
-            if(hashList[i]->getTamanho() > 1) {
-                colisoes += hashList[i]->getTamanho() - 1;
+            (*tamanhoArray) += hashList[i]->getTamanho();
+        }
+    }
+
+    int* arrayInt = new int[(*tamanhoArray)];
+
+    int counter = 0;
+    for(int i = 0; i < tamanho; i++) {
+        if(!hashList[i]->vazia()) {
+            for(HashNode* node = hashList[i]->hashRaiz; node != nullptr; node = node->getProx()) {
+                arrayInt[counter] = node->getFrequencia();
+                counter++;
             }
         }
     }
-    cout << "Numero total: " << numero << endl;
-    cout << "Colisoes: " << colisoes << endl;
+
+    return arrayInt;
 }
 
+char** Hash::getArrayChar(int* tamanhoArray) {
+    (*tamanhoArray) = 0;
 
+    for(int i = 0; i < tamanho; i++) {
+        if(!hashList[i]->vazia()) {
+            (*tamanhoArray) += hashList[i]->getTamanho();
+        }
+    }
 
+    char** arrayChar = new char*[(*tamanhoArray)];
 
+    int counter = 0;
+    for(int i = 0; i < tamanho; i++) {
+        if(!hashList[i]->vazia()) {
+            for(HashNode* node = hashList[i]->hashRaiz; node != nullptr; node = node->getProx()) {
+                arrayChar[counter] = node->getAppVersion();
+                counter++;
+            }
+        }
+    }
 
+    return arrayChar;
+}
