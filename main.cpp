@@ -14,6 +14,7 @@
 const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
 const string index_name = "index.bin";
+const string input_dat_name = "input.txt";
 typedef Review* ReviewPtr;
 
 
@@ -27,12 +28,9 @@ int menu(){
     //menu para que o usuário possa escolher a função na qual ele queira executar no momento
     cout << "MENU" << endl;
     cout << "----" << endl;
-    cout << "[1] acessaRegistro(i)" << endl;
-    cout << "[2] testeImportacao()" << endl;
-    cout << "[3] quicksort" << endl;
-    cout << "[4] heapSort" << endl;
-    cout << "[5] countingSort" << endl;
-    cout << "[6] Hash" << endl;
+    cout << "[1] Ordenacao" << endl;
+    cout << "[2] Hash" << endl;
+    cout << "[3] Modulo de testes" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -40,80 +38,170 @@ int menu(){
     return selecao;
 }
 
-ReviewPtr* cronometrarReviewList(ifstream* files, int* n, ReviewPtr *big_review_list, int reviews){
-    cout << "Numero de reviews desejada para importacao: " << endl;
-    cin >> *n;
+ReviewPtr* cronometrarReviewList(ifstream* files, int n, ReviewPtr *big_review_list, int reviews){
 
     //variavel para cronometrar o tempo de execucao
     auto start = high_resolution_clock::now();
 
-    ReviewPtr *review_list = Process::importarReviewsRandomicas(big_review_list, reviews, *n);
+    ReviewPtr *review_list = Process::importarReviewsRandomicas(big_review_list, reviews, n);
 
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Tempo da importação: " << duration.count() / pow(10, 6) << " seconds" << endl;
+    //cout << "Tempo da importacao: " << duration.count() / pow(10, 6) << " seconds" << endl;
     return review_list;
 }
 
-void cronometrarQuickSort(ReviewPtr* review_list, int n){
+float cronometrarQuickSort(ifstream* files, ReviewPtr* big_review_list, int reviews, int n, int* movimentacoes, int* comparacoes){
+
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
     auto start = high_resolution_clock::now();
 
     //chmando função de quicksort
-    int movimentacoes = 0;
-    int comparacoes = 0;
 
-    Sorts::quicksort(review_list, 0, n - 1, &movimentacoes, &comparacoes);
+    Sorts::quicksort(review_list, 0, n - 1, movimentacoes, comparacoes);
 
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Tempo da execução do quicksort: " << duration.count() / pow(10, 6) << " seconds" << endl;
-    cout << "movimentacoes " << movimentacoes << endl;
-    cout << "comparacoes " << comparacoes << endl;
+    delete[] review_list;
+
+    return duration.count() / pow(10, 6);
 }
 
-void cronometrarHeapSort(ReviewPtr* review_list, int n){
+float cronometrarHeapSort(ifstream* files, ReviewPtr* big_review_list, int reviews, int n, int* movimentacoes, int* comparacoes){
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
     auto start = high_resolution_clock::now();
 
     //chmando função de heapSort
-    int movimentacoes = 0;
-    int comparacoes = 0;
-
-    Sorts::heapSort(review_list, n - 1, &movimentacoes, &comparacoes);
+    Sorts::heapSort(review_list, n - 1, movimentacoes, comparacoes);
 
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Tempo da execução do heapSort: " << duration.count() / pow(10, 6) << " seconds" << endl;
-    cout << "movimentacoes " << movimentacoes << endl;
-    cout << "comparacoes " << comparacoes << endl;
+
+    delete[] review_list;
+
+    return duration.count() / pow(10, 6);
 }
 
-void cronometrarCountingSort(ReviewPtr* review_list, int n, int max){
+float cronometrarCountingSort(ifstream* files, ReviewPtr* big_review_list, int reviews, int n, int* movimentacoes, float* memoria_alocada){
+
+    int max = -1;
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
+    for(int i = 0; i < n; i++){
+        if(review_list[i]->getUpvotes() > max){
+            max = review_list[i]->getUpvotes();
+        }
+    }
+
     auto start = high_resolution_clock::now();
 
-//    chmando função de quicksort
-    int movimentacoes = 0;
-    int comparacoes = 0;
-    float memoria_alocada = 0;
+//    chamando função de quicksort
+    *memoria_alocada = 0;
 
-    Sorts::countingSort(review_list, n, max, &movimentacoes, &memoria_alocada);
+    Sorts::countingSort(review_list, n, max, movimentacoes, memoria_alocada);
 
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Tempo da execução do countingSort: " << duration.count() / pow(10, 6) << " seconds" << endl;
-    cout << "movimentacoes " << movimentacoes << endl;
-    cout << "comparacoes " << comparacoes << endl;
-    cout << "memoria adicional alocada " << memoria_alocada/(1024*1024) << " MB" << endl;
+
+    delete[] review_list;
+
+    return duration.count() / pow(10, 6);
 }
 
-void cronometrarHash(Hash *hashList, ReviewPtr *review_list, int n){
+float cronometrarQuickSortTeste(ifstream* files, ReviewPtr* big_review_list, int reviews, int n, int* movimentacoes, int* comparacoes, ofstream& output_file){
 
-    int m = 0;
-    cout << "Digite quantas versoes do app devem ser impressas:" << endl;
-    cin >> m;
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
+    auto start = high_resolution_clock::now();
+
+    //chmando função de quicksort
+
+    Sorts::quicksort(review_list, 0, n - 1, movimentacoes, comparacoes);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    output_file << "Quciksort: Array de Reviews ordenada de forma crescente pelos upvotes: " << endl;
+    for(int i = 0; i < n; i++){
+        output_file << "Review = Upvotes: " << review_list[i]->getUpvotes() << " " << "Id: " << review_list[i]->getReviewId() << endl;
+    }
+    output_file << endl << endl;
+
+    delete[] review_list;
+
+    return duration.count() / pow(10, 6);
+}
+
+float cronometrarHeapSortTeste(ifstream* files, ReviewPtr* big_review_list, int reviews, int n, int* movimentacoes, int* comparacoes, ofstream& output_file){
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
+    auto start = high_resolution_clock::now();
+
+    //chmando função de heapSort
+    Sorts::heapSort(review_list, n - 1, movimentacoes, comparacoes);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    output_file << "HeapSort: Array de Reviews ordenada de forma crescente pelos upvotes: " << endl;
+    for(int i = 0; i < n; i++){
+        output_file << "Review = Upvotes: " << review_list[i]->getUpvotes() << " " << "Id: " << review_list[i]->getReviewId() << endl;
+    }
+    output_file << endl << endl;
+
+    delete[] review_list;
+
+    return duration.count() / pow(10, 6);
+}
+
+float cronometrarCountingSortTeste(ifstream* files, ReviewPtr* big_review_list, int reviews, int n, int* movimentacoes, float* memoria_alocada, ofstream& output_file){
+
+    int max = -1;
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
+    for(int i = 0; i < n; i++){
+        if(review_list[i]->getUpvotes() > max){
+            max = review_list[i]->getUpvotes();
+        }
+    }
+
+    auto start = high_resolution_clock::now();
+
+//    chamando função de quicksort
+    *memoria_alocada = 0;
+
+    Sorts::countingSort(review_list, n, max, movimentacoes, memoria_alocada);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    output_file << "CountingSort: Array de Reviews ordenada de forma crescente pelos upvotes: " << endl;
+    for(int i = 0; i < n; i++){
+        output_file << "Review = Upvotes: " << review_list[i]->getUpvotes() << " " << "Id: " << review_list[i]->getReviewId() << endl;
+    }
+    output_file << endl << endl;
+
+    delete[] review_list;
+
+    return duration.count() / pow(10, 6);
+}
+
+float cronometrarHash(ifstream* files, ReviewPtr* big_review_list, int n, int reviews, int m){
+
+    Hash *hashList = new Hash(6000);
+
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
+
 
     auto start = high_resolution_clock::now();
     //Executando o hash
@@ -124,13 +212,40 @@ void cronometrarHash(Hash *hashList, ReviewPtr *review_list, int n){
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "Tempo da execução do hash: " << duration.count() / pow(10, 6) << " seconds" << endl;
 //    cout << "Versoes mais frequentes do app:"<< endl;
     hashList->imprimeMaisFrequentes(m);
+
+    delete[] review_list;
+    delete hashList;
+    return duration.count() / pow(10, 6);
+}
+
+float cronometrarHashTeste(ifstream* files, ReviewPtr* big_review_list, int n, int reviews, ofstream& output_file){
+
+    Hash *hashList = new Hash(6000);
+
+    ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+
+
+
+    auto start = high_resolution_clock::now();
+    //Executando o hash
+    for(int i = 0; i < n; i++) {
+        hashList->inserir(review_list[i]);
+    }
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+//    cout << "Versoes mais frequentes do app:"<< endl;
+    hashList->imprimeMaisFrequentesTeste(output_file);
+
+    delete[] review_list;
+    delete hashList;
+    return duration.count() / pow(10, 6);
 }
 
 void selecionar(int selecao, ifstream* files, string path){
-
     int reviews = 0;
     ReviewPtr* big_review_list = Process::importarBinario(files, &reviews);
     switch (selecao) {
@@ -140,77 +255,161 @@ void selecionar(int selecao, ifstream* files, string path){
             exit(0);
             break;
         }
-            //acessa diretamente o i-ésimo registro do arquivo binário e o imprime na tela. O valor de i deve ser fornecido pelo usuário.
+
+        //ordenacao
         case 1: {
-            Process::acessaRegistro(files);
-            break;
-        }
-//        Note que a função testeImportacao() é apenas uma função de teste.
-//         O programa deve ser capaz de importar registros do arquivo para quaisquer valores de N, sem erros e sem gerar exceções.
-        case 2: {
-            Process::testeImportacao(files, path);
-            break;
-        }
-
-        case 3: {
-
             int n = 0;
+            ofstream txt_file;
+            txt_file.open((path + "saida.txt"), ios::out | ios::trunc);
 
-            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
+            while (files[2] >> n) {
+                float mediaTempoQS = 0;
+                float mediaTempoHS = 0;
+                float mediaTempoCS = 0;
 
-            cronometrarQuickSort(review_list, n);
+                float mediaComparacoesQS = 0;
+                float mediaComparacoesHS = 0;
+                float mediaMovimentacoesQS = 0;
+                float mediaMovimentacoesHS = 0;
+                float mediaMovimentacoesCS = 0;
 
-            delete[] review_list;
+                float mediaMemoriaAlocadaCS = 0;
 
-            break;
-        }
+                cout << "Iniciando processamentos e importacoes: " << endl;
+                for (int i = 0; i < 3; i++) {
+                    cout << "Processamento de " << n << " em " << (i+1)*33.33 << "%" << endl;
+                    float memoriaAlocadaCS_loop = 0;
 
-        case 4: {
+                    int comparacoesQS_loop = 0;
+                    int comparacoesHS_loop = 0;
 
-            int n = 0;
+                    int movimentacoesQS_loop = 0;
+                    int movimentacoesHS_loop = 0;
+                    int movimentacoesCS_loop = 0;
 
-            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
+                    float tempoQS_loop = cronometrarQuickSort(files, big_review_list, reviews, n, &movimentacoesQS_loop,&comparacoesQS_loop);
+                    float tempoHS_loop = cronometrarHeapSort(files, big_review_list, reviews, n, &movimentacoesHS_loop,&comparacoesHS_loop);
+                    float tempoCS_loop = cronometrarCountingSort(files, big_review_list, reviews, n, &movimentacoesCS_loop, &memoriaAlocadaCS_loop);
 
-            cronometrarHeapSort(review_list, n);
+                    mediaTempoQS += tempoQS_loop / 3;
+                    mediaTempoHS += tempoHS_loop / 3;
+                    mediaTempoCS += tempoCS_loop / 3;
 
-            delete[] review_list;
+                    mediaComparacoesQS += comparacoesQS_loop / 3;
+                    mediaComparacoesHS += comparacoesHS_loop / 3;
 
-            break;
+                    mediaMovimentacoesQS += movimentacoesQS_loop / 3;
+                    mediaMovimentacoesHS += movimentacoesHS_loop / 3;
+                    mediaMovimentacoesCS += movimentacoesCS_loop / 3;
 
-        }
+                    mediaMemoriaAlocadaCS += memoriaAlocadaCS_loop / 3;
 
-        case 5: {
+                    txt_file << "#---------------------------------#" << endl;
+                    txt_file << "Resultados para N (espaco amostral " << (i+1) << " ): " << n << endl << endl;
+                    txt_file << "tempo de execucao: " << endl;
+                    txt_file << "QuickSort: " << tempoQS_loop << endl;
+                    txt_file << "HeapSort: " << tempoHS_loop << endl;
+                    txt_file << "CoutingSort: " << tempoCS_loop << endl << endl;
 
-            int n = 0, max = -1;
+                    txt_file << "Comparacoes: " << endl;
+                    txt_file << "QuickSort: " << comparacoesQS_loop << endl;
+                    txt_file << "HeapSort: " << comparacoesHS_loop << endl << endl;
 
-            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
+                    txt_file << "Movimentacoes: " << endl;
+                    txt_file << "QuickSort: " << movimentacoesQS_loop << endl;
+                    txt_file << "HeapSort: " << movimentacoesHS_loop << endl;
+                    txt_file << "CoutingSort: " << movimentacoesCS_loop << endl << endl;
 
-            for(int i = 0; i < n; i++){
-                if(review_list[i]->getUpvotes() > max){
-                    max = review_list[i]->getUpvotes();
+                    txt_file << "memoria alocada pelo CountingSort: " << memoriaAlocadaCS_loop / (1024 * 1024)
+                             << " MB" << endl << endl;
+                    txt_file << "#---------------------------------#" << endl << endl;
                 }
+
+                txt_file << "#---------------------------------#" << endl;
+                txt_file << "Medias para N: " << n << endl << endl;
+                txt_file << "Medias de tempo de execucao: " << endl;
+                txt_file << "QuickSort: " << mediaTempoQS << endl;
+                txt_file << "HeapSort: " << mediaTempoHS << endl;
+                txt_file << "CoutingSort: " << mediaTempoCS << endl << endl;
+
+                txt_file << "Medias de Comparacoes: " << endl;
+                txt_file << "QuickSort: " << mediaComparacoesQS << endl;
+                txt_file << "HeapSort: " << mediaComparacoesHS << endl << endl;
+
+                txt_file << "Medias de Movimentacoes: " << endl;
+                txt_file << "QuickSort: " << mediaMovimentacoesQS << endl;
+                txt_file << "HeapSort: " << mediaMovimentacoesHS << endl;
+                txt_file << "CoutingSort: " << mediaMovimentacoesCS << endl << endl;
+
+                txt_file << "Media de memoria alocada pelo CountingSort: " << mediaMemoriaAlocadaCS / (1024 * 1024)
+                         << " MB" << endl << endl;
+                txt_file << "#---------------------------------#" << endl << endl;
+
             }
-
-            cronometrarCountingSort(review_list, n, max);
-
-            delete[] review_list;
-
+            cout << "Processamento concluido, dados savlos em " << path << "input.txt" << endl;
             break;
-
         }
-        case 6: {
-            Hash *hashList = new Hash(6000);
 
+            //Hash
+        case 2: {
             int n = 0;
+            cout << "quantas reviews voce deseja ler?" << endl;
+            cin >> n;
 
-            ReviewPtr *review_list =  cronometrarReviewList(files, &n, big_review_list, reviews);
+            int m = 0;
+            cout << "Digite quantas versoes do app devem ser impressas:" << endl;
+            cin >> m;
 
-            cronometrarHash(hashList, review_list, n);
-
-            delete[] review_list;
-            delete hashList;
+            float tempo = cronometrarHash(files, big_review_list,  n, reviews, m);
+            cout << "Tempo da execução do hash: " << tempo << " seconds" << endl;
 
             break;
+        }
+
+        //Módulo de teste
+        case 3: {
+            int n = 100;
+            ofstream txt_file;
+            txt_file.open((path + "teste.txt"), ios::out | ios::trunc);
+            int mediaComparacoesQS = 0;
+            int mediaComparacoesHS = 0;
+            int mediaMovimentacoesQS = 0;
+            int mediaMovimentacoesHS = 0;
+            int mediaMovimentacoesCS = 0;
+
+            float mediaMemoriaAlocadaCS = 0;
+
+            cout << "Iniciando processamentos e importacoes: " << endl;
+
+            int mediaTempoQS = cronometrarQuickSortTeste(files, big_review_list, reviews, n, &mediaMovimentacoesQS, &mediaComparacoesQS, txt_file);
+            int mediaTempoHS = cronometrarHeapSortTeste(files, big_review_list, reviews, n, &mediaMovimentacoesHS, &mediaComparacoesHS, txt_file);
+            int mediaTempoCS = cronometrarCountingSortTeste(files, big_review_list, reviews, n, &mediaMovimentacoesCS, &mediaMemoriaAlocadaCS, txt_file);
+
+            txt_file << "#------------  Ordenacao  ------------#" << endl;
+            txt_file << "Medias para N: " << n << endl << endl;
+            txt_file << "tempo de execucao: " << endl;
+            txt_file << "QuickSort: " << mediaTempoQS << endl;
+            txt_file << "HeapSort: " << mediaTempoHS << endl;
+            txt_file << "CoutingSort: " << mediaTempoCS << endl << endl;
+
+            txt_file << "Comparacoes: " << endl;
+            txt_file << "QuickSort: " << mediaComparacoesQS << endl;
+            txt_file << "HeapSort: " << mediaComparacoesHS << endl << endl;
+
+            txt_file << "Movimentacoes: " << endl;
+            txt_file << "QuickSort: " << mediaMovimentacoesQS << endl;
+            txt_file << "HeapSort: " << mediaMovimentacoesHS << endl;
+            txt_file << "CoutingSort: " << mediaMovimentacoesCS << endl << endl;
+
+            txt_file << "memoria alocada pelo CountingSort: " << mediaMemoriaAlocadaCS / (1024 * 1024) << " MB" << endl << endl;
+            txt_file << "#-------------------------------------#\"" << endl << endl;
+
+            txt_file << "#------------  Hash  ------------#" << endl;
+            int mediaTempoHash = cronometrarHashTeste(files, big_review_list, n, reviews, txt_file);
+            txt_file << "Tempo de execucao do hash: " << mediaTempoHash << endl;
+            txt_file << "#-------------------------------------#\"" << endl << endl;
+
+            cout << "Processamento concluido, dados savlos em " << path << "teste.txt" << endl;
         }
     }
 
@@ -245,13 +444,18 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
-    ifstream read_files[2];
+    ifstream read_files[3];
     read_files[0].open(argv[1] + bin_name, ios::in); //abre o arquivo binario com o conteudo das reviews
     read_files[1].open(argv[1] + index_name, ios::in); //abre o arquivo binario com os indices das reviews
+    read_files[2].open(argv[1] + input_dat_name, ios::in); //abre o txt com as encontrado na pasta dos binarios
     if(read_files[0].is_open() && read_files[1].is_open()) //caso tenha sido encontrado algum binario no diretorio informado
     {
-        cout << "Arquivos binarios econtrados com sucesso!" << endl;
-        mainMenu(read_files, argv[1]); //chama o menu
+        if(read_files[2].is_open()){
+            cout << "Arquivos binarios e input.dat econtrados com sucesso!" << endl;
+            mainMenu(read_files, argv[1]); //chama o menu
+        } else{
+            cout << "Erro: arquivo input.dat não encontrado! por favor o insira na pasta: " << argv[1] << endl;
+        }
     }else{ //caso nao tenha sido encontrado nenhum arquivo binario na pasta
         read_files[0].close();
         read_files[1].close();

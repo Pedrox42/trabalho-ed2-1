@@ -91,9 +91,24 @@ void Hash::imprimeMaisFrequentes(int m)
             cout << "Frequencia: " << arrayInt[i] << endl;
         }
     }
-     else{
+    else{
         cout <<  "Erro: o numero pedido eh maior que o numero de versoes!" << endl;
     }
+}
+
+void Hash::imprimeMaisFrequentesTeste(ofstream& output_file)
+{
+    int tam = 0;
+    int* arrayInt = this->getArrayInt(&tam);
+    char** arrayChar =  this->getArrayChar(&tam);
+
+    Sorts::heapSortHash(arrayInt, arrayChar, tam - 1);
+    output_file << "As 10 versoes mais frequentes: " << endl;
+    for (int i = tam - 1; tam-i <= tam; i--) {
+        output_file << "Versao: " << arrayChar[i] << endl;
+        output_file << "Frequencia: " << arrayInt[i] << endl;
+    }
+    output_file << endl;
 }
 
 //transformando lista hash em array de ints de frequência
