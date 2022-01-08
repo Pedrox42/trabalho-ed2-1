@@ -2,7 +2,7 @@
 #include "RedBlackNode.h"
 #include <iostream>
 
-enum Color {RED, BLACK};
+enum Color {VERMELHO, PRETO};
 
 using namespace std;
 
@@ -55,10 +55,10 @@ void RedBlackTree::emOrdemAux(RedBlackNode *p)
     emOrdemAux(p->getEsq());
     cout << "---------- No --------" << endl;
     cout << "ID: " << p->getId() << endl;
-    cout << "Cor: " << p->getCor() << endl;
+    cout << "Cor: " << (p->getCor() ? "Preto" : "Vermelho") << endl;
     if(p->getPai() != nullptr){
         cout << "pai: " << p->getPai()->getId() << endl;
-        if(p->getPai()->getEsq() != nullptr){
+        if(p->getPai()->getEsq() != nullptr || p->getPai()->getDir() != nullptr){
             cout << (p->getPai()->getEsq() == p ? "No esquerdo" : "No direito") << endl;
         }
     }
@@ -74,7 +74,7 @@ void RedBlackTree::inserir(double enderecoMemoria, char* id)
     raiz = inserirAux(raiz, p);
 
     // consertar error de arvore vermelho-preto
-//    consertar(p);
+    consertar(raiz, p);
 }
 
 //inserindo novo no como se fosse uma uma arvore binaria de busca
@@ -103,100 +103,150 @@ RedBlackNode* RedBlackTree::inserirAux(RedBlackNode* node1, RedBlackNode *node2)
     return node1;
 }
 
-//void RBTree::fixViolation(Node *&root, Node *&pt)
-//{
-//    Node *parent_pt = NULL;
-//    Node *grand_parent_pt = NULL;
-//
-//    while ((pt != root) && (pt->color != BLACK) &&
-//           (pt->parent->color == RED))
-//    {
-//
-//        parent_pt = pt->parent;
-//        grand_parent_pt = pt->parent->parent;
-//
-//        /*  Case : A
-//            Parent of pt is left child
-//            of Grand-parent of pt */
-//        if (parent_pt == grand_parent_pt->left)
-//        {
-//
-//            Node *uncle_pt = grand_parent_pt->right;
-//
-//            /* Case : 1
-//               The uncle of pt is also red
-//               Only Recoloring required */
-//            if (uncle_pt != NULL && uncle_pt->color ==
-//                                    RED)
-//            {
-//                grand_parent_pt->color = RED;
-//                parent_pt->color = BLACK;
-//                uncle_pt->color = BLACK;
-//                pt = grand_parent_pt;
-//            }
-//
-//            else
-//            {
-//                /* Case : 2
-//                   pt is right child of its parent
-//                   Left-rotation required */
-//                if (pt == parent_pt->right)
-//                {
-//                    rotateLeft(root, parent_pt);
-//                    pt = parent_pt;
-//                    parent_pt = pt->parent;
-//                }
-//
-//                /* Case : 3
-//                   pt is left child of its parent
-//                   Right-rotation required */
-//                rotateRight(root, grand_parent_pt);
-//                swap(parent_pt->color,
-//                     grand_parent_pt->color);
-//                pt = parent_pt;
-//            }
-//        }
-//
-//            /* Case : B
-//               Parent of pt is right child
-//               of Grand-parent of pt */
-//        else
-//        {
-//            Node *uncle_pt = grand_parent_pt->left;
-//
-//            /*  Case : 1
-//                The uncle of pt is also red
-//                Only Recoloring required */
-//            if ((uncle_pt != NULL) && (uncle_pt->color ==
-//                                       RED))
-//            {
-//                grand_parent_pt->color = RED;
-//                parent_pt->color = BLACK;
-//                uncle_pt->color = BLACK;
-//                pt = grand_parent_pt;
-//            }
-//            else
-//            {
-//                /* Case : 2
-//                   pt is left child of its parent
-//                   Right-rotation required */
-//                if (pt == parent_pt->left)
-//                {
-//                    rotateRight(root, parent_pt);
-//                    pt = parent_pt;
-//                    parent_pt = pt->parent;
-//                }
-//
-//                /* Case : 3
-//                   pt is right child of its parent
-//                   Left-rotation required */
-//                rotateLeft(root, grand_parent_pt);
-//                swap(parent_pt->color,
-//                     grand_parent_pt->color);
-//                pt = parent_pt;
-//            }
-//        }
-//    }
-//
-//    root->color = BLACK;
-//}
+void RedBlackTree::rotacionarEsq(RedBlackNode* node)
+{
+    RedBlackNode* pt_right = node->getDir();
+
+    node->setDir(pt_right->getEsq());
+
+    if (node->getDir() != nullptr)
+        node->getDir()->setPai(node);
+
+    pt_right->setPai(node->getPai());
+
+    if (node->getPai() == nullptr)
+        raiz = pt_right;
+
+    else if (node == node->getPai()->getEsq())
+        node->getPai()->setEsq(pt_right);
+
+    else
+        node->getPai()->setDir(pt_right);
+
+    pt_right->setEsq(node);
+    node->setPai(pt_right);
+}
+
+void RedBlackTree::rotacionarDir(RedBlackNode* node)
+{
+    RedBlackNode* pt_left = node->getEsq();
+
+    node->setEsq(pt_left->getDir());
+
+    if (node->getEsq() != nullptr)
+        node->getEsq()->setPai(node);
+
+    pt_left->setPai(node->getPai());
+
+    if (node->getPai() == nullptr)
+        raiz = pt_left;
+
+    else if (node == node->getPai()->getEsq())
+        node->getPai()->setEsq(pt_left);
+
+    else
+        node->getPai()->setDir(pt_left);
+
+    pt_left->setDir(node);
+    node->setPai(pt_left);
+}
+
+void RedBlackTree::consertar(RedBlackNode* node1, RedBlackNode* node2)
+{
+    //node1 -> raiz local
+    //node2 -> no inserido/no local
+
+    RedBlackNode* pai_pt = nullptr;
+    RedBlackNode* avo_pt = nullptr;
+
+    while ((node2 != node1) && (node2->getCor() != PRETO) && (node2->getPai()->getCor() == VERMELHO))
+    {
+
+        pai_pt = node2->getPai();
+        avo_pt = node2->getPai()->getPai();
+
+        //  Caso : A
+        //   pai do no conflitante esta a esquerda do avo de pai
+        if (pai_pt == avo_pt->getEsq())
+        {
+            RedBlackNode *tio_pt = avo_pt->getDir();
+
+            // Caso : 1
+            // o avo eh vermelho
+            if (tio_pt != nullptr && tio_pt->getCor() == VERMELHO)
+            {
+                avo_pt->setCor(VERMELHO);
+                pai_pt->setCor(PRETO);
+                tio_pt->setCor(PRETO);
+                node2 = avo_pt;
+            }
+            else
+            {
+                // Caso : 2
+                // o no conflitante esta a direita de seu pai
+                // rotaciona para a esquerda
+                if (node2 == pai_pt->getDir())
+                {
+                    rotacionarEsq(pai_pt);
+                    node2 = pai_pt;
+                    pai_pt = node2->getPai();
+                }
+
+                // Caso : 3
+                // o no conflitante está a esquerda de seu pai
+                // rotaciona para a direita
+                rotacionarDir(avo_pt);
+
+                //swap de cores
+                bool corAux = pai_pt->getCor();
+                pai_pt->setCor(avo_pt->getCor());
+                avo_pt->setCor(corAux);
+
+                node1 = pai_pt;
+            }
+        }
+
+            // Caso : B
+            //   pai do no conflitante é o filho da direita de seu avo
+        else
+        {
+            RedBlackNode *tio_pt = avo_pt->getEsq();
+
+            // o tio do no conflitante tambem e vermelho
+            if ((tio_pt != nullptr) && (tio_pt->getCor() == VERMELHO))
+            {
+                avo_pt->setCor(VERMELHO);
+                pai_pt->setCor(PRETO);
+                tio_pt->setCor(PRETO);
+                node2 = avo_pt;
+            }
+            else
+            {
+                // Caso : 2
+                //   o no conflitante esta a esquerda de seu pai
+                //   rotacao a direita precisa
+                if (node2 == pai_pt->getEsq())
+                {
+                    rotacionarDir(pai_pt);
+                    node2 = pai_pt;
+                    pai_pt = node2->getPai();
+                }
+
+                // Caso : 3
+                // o no conflitante esta a direita de seu pai
+                // rotacao para a esquerda precisa
+                rotacionarEsq(avo_pt);
+
+                //swap de cores
+                bool corAux = pai_pt->getCor();
+                pai_pt->setCor(avo_pt->getCor());
+                avo_pt->setCor(corAux);
+
+                node2 = pai_pt;
+            }
+        }
+    }
+
+    node1->setCor(PRETO);
+}
+

@@ -6,6 +6,7 @@
 #include <string.h>
 #include "Sorts.h"
 #include "Process.h"
+#include "RedBlackTree.h"
 #include <ctime>
 #include <cmath>
 #include <chrono>
@@ -31,6 +32,7 @@ int menu(){
     cout << "[1] Ordenacao" << endl;
     cout << "[2] Hash" << endl;
     cout << "[3] Modulo de testes" << endl;
+    cout << "[4] Arvore Vermelho-Preto" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -245,6 +247,36 @@ float cronometrarHashTeste(ifstream* files, ReviewPtr* big_review_list, int n, i
     return duration.count() / pow(10, 6);
 }
 
+float cronometrarRedBlackTree(){
+
+    RedBlackTree* arv = new RedBlackTree();
+
+
+    auto start = high_resolution_clock::now();
+    //inserindo na arv vermelho-preto
+    char str1[2] = {'K', '\0'};
+    char str2[2] = {'A', '\0'};
+    char str3[2] = {'N', '\0'};
+    char str4[2] = {'B', '\0'};
+    char str5[2] = {'G', '\0'};
+    char str6[2] = {'O', '\0'};
+
+    arv->inserir(1, str1);
+    arv->inserir(1, str2);
+    arv->inserir(1, str3);
+    arv->inserir(1, str4);
+    arv->inserir(1, str5);
+    arv->inserir(1, str6);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    cout << "imprimindo:" << endl;
+    arv->emOrdem();
+    //delete[] arv;
+    return duration.count() / pow(10, 6);
+}
+
 void selecionar(int selecao, ifstream* files, string path){
     int reviews = 0;
     ReviewPtr* big_review_list = Process::importarBinario(files, &reviews);
@@ -410,6 +442,11 @@ void selecionar(int selecao, ifstream* files, string path){
             txt_file << "#-------------------------------------#\"" << endl << endl;
 
             cout << "Processamento concluido, dados savlos em " << path << "teste.txt" << endl;
+        }
+
+        case 4:{
+            cronometrarRedBlackTree();
+            break;
         }
     }
 

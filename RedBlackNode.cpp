@@ -1,13 +1,13 @@
 #include "RedBlackNode.h"
 
-enum Cor {RED, BLACK};
+enum Cor {VERMELHO, PRETO};
 
 RedBlackNode::RedBlackNode(double enderecoMemoria, char* id) {
     this->enderecoMemoria = enderecoMemoria;
     this->id = new char[id_size];
     this->id = id;
     esq = dir = pai = nullptr;
-    this->cor = RED;
+    this->cor = VERMELHO;
 }
 
 RedBlackNode::~RedBlackNode() {

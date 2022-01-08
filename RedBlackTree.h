@@ -6,9 +6,9 @@
 class RedBlackTree {
     private:
         RedBlackNode* raiz;
-        void rotacionarEsq(RedBlackNode* child);
-        void rotacionarDir(RedBlackNode* child);
-        void consertar(RedBlackNode* child);
+        void rotacionarEsq(RedBlackNode* node);
+        void rotacionarDir(RedBlackNode* node);
+        void consertar(RedBlackNode* node1, RedBlackNode* node2);
         RedBlackNode* libera(RedBlackNode* p);
         void emOrdemAux(RedBlackNode* p);
         RedBlackNode *inserirAux(RedBlackNode* node1, RedBlackNode *node2);
