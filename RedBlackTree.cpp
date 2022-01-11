@@ -37,6 +37,14 @@ bool RedBlackTree::compararId(char* id1, char* id2){
     return id1[i] > id2[i];
 }
 
+bool RedBlackTree::idIgual(char* id1, char* id2){
+    int i = 0;
+//    cout << "teste" << endl;
+    for(i = 0; id1[i] != '\0' && id1[i] == id2[i]; i++);
+//    cout << (id1[i] > id2[i]) << endl;
+    return id1[i] == id2[i];
+}
+
 
 void RedBlackTree::emOrdem() {
     if(raiz == nullptr){
@@ -67,36 +75,38 @@ void RedBlackTree::emOrdemAux(RedBlackNode *p)
     emOrdemAux(p->getDir());
 }
 
-void RedBlackTree::inserir(double enderecoMemoria, char* id)
+void RedBlackTree::inserir(double enderecoMemoria, char* id, double* comparacoes)
 {
     RedBlackNode *p = new RedBlackNode(enderecoMemoria, id);
 
     // insercao normal utilizando busca binaria
-    raiz = inserirAux(raiz, p);
+    raiz = inserirAux(raiz, p, comparacoes);
 
     // consertar error de arvore vermelho-preto
     consertar(raiz, p);
 }
 
 //inserindo novo no como se fosse uma uma arvore binaria de busca
-RedBlackNode* RedBlackTree::inserirAux(RedBlackNode* node1, RedBlackNode *node2)
+RedBlackNode* RedBlackTree::inserirAux(RedBlackNode* node1, RedBlackNode *node2, double* comparacoes)
 {
     //node1 = raiz local
     //node2 = no filho
     // se a arvore estiver vazia, retorna o novo no
+    (*comparacoes)++;
     if (node1 == nullptr) {
         return node2;
     }
 
     // Caso contrario, faz uma busca binaria recursiva pela arvore para inserir o No no lugar certo
+    (*comparacoes)++;
     if (compararId(node1->getId(), node2->getId()))
     {
-        node1->setEsq(inserirAux(node1->getEsq(), node2));
+        node1->setEsq(inserirAux(node1->getEsq(), node2, comparacoes));
         node1->getEsq()->setPai(node1);
     }
-    else if (!compararId(node1->getId(), node2->getId()))
+    else
     {
-        node1->setDir(inserirAux(node1->getDir(), node2));
+        node1->setDir(inserirAux(node1->getDir(), node2, comparacoes));
         node1->getDir()->setPai(node1);
     }
 
@@ -251,3 +261,35 @@ void RedBlackTree::consertar(RedBlackNode* node1, RedBlackNode* node2)
     node1->setCor(PRETO);
 }
 
+RedBlackNode* RedBlackTree::buscar(char* id, double* comparacoes)
+{
+    if(raiz != nullptr){
+        RedBlackNode* node = buscarAux(raiz, id, comparacoes);
+        if(node != nullptr){
+            return node;
+        } else{
+            cout << "Erro: Id nao encontrado!" << endl;
+            return nullptr;
+        }
+    } else{
+        cout << "Erro: Arvore vazia!" << endl;
+        return nullptr;
+    }
+}
+
+
+RedBlackNode* RedBlackTree::buscarAux(RedBlackNode* node, char* id, double* comparacoes)
+{
+    //caso o no atual seja o valor, ou seja nulo.
+    (*comparacoes)++;
+    if (node == nullptr || idIgual(node->getId(), id))
+        return node;
+
+    // caso o id seja "maior" que o atual
+    (*comparacoes)++;
+    if (!compararId(node->getId(), id))
+        return buscarAux(node->getDir(), id, comparacoes);
+
+    // caso o id seja menor que o atual
+    return buscarAux(node->getEsq(), id, comparacoes);
+}

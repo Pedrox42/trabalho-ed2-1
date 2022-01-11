@@ -11,15 +11,17 @@ class RedBlackTree {
         void consertar(RedBlackNode* node1, RedBlackNode* node2);
         RedBlackNode* libera(RedBlackNode* p);
         void emOrdemAux(RedBlackNode* p);
-        RedBlackNode *inserirAux(RedBlackNode* node1, RedBlackNode *node2);
+        RedBlackNode *inserirAux(RedBlackNode* node1, RedBlackNode *node2, double* comparacoes);
         bool compararId(char *id1, char *id2);
+        bool idIgual(char *id1, char *id2);
+        RedBlackNode* buscarAux(RedBlackNode* node, char* id, double* comparacoes);
     public:
         // Constructor
         RedBlackTree();
         ~RedBlackTree();
-        void inserir(double enderecoMemoria, char* id);
+        void inserir(double enderecoMemoria, char* id, double* comparacoes);
         void emOrdem();
-
+        RedBlackNode* buscar(char* id, double* comparacoes);
 };
 
 

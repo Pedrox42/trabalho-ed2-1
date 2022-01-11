@@ -33,6 +33,7 @@ int menu(){
     cout << "[2] Hash" << endl;
     cout << "[3] Modulo de testes" << endl;
     cout << "[4] Arvore Vermelho-Preto" << endl;
+    cout << "[5] Arvore Vermelho-Preto testes" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -46,20 +47,6 @@ ReviewPtr* cronometrarReviewList(ifstream* files, int n, ReviewPtr *big_review_l
     auto start = high_resolution_clock::now();
 
     ReviewPtr *review_list = Process::importarReviewsRandomicas(big_review_list, reviews, n);
-
-    //cronometrando o tempo de execucao
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-    //cout << "Tempo da importacao: " << duration.count() / pow(10, 6) << " seconds" << endl;
-    return review_list;
-}
-
-ReviewPtr* cronometrarReviewListBalanceada(ifstream* files, int n, ReviewPtr *big_review_list, double* enderecos_list, double* enderecos, int reviews){
-
-    //variavel para cronometrar o tempo de execucao
-    auto start = high_resolution_clock::now();
-
-    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
@@ -261,15 +248,12 @@ float cronometrarHashTeste(ifstream* files, ReviewPtr* big_review_list, int n, i
     return duration.count() / pow(10, 6);
 }
 
-float cronometrarRedBlackTree(ifstream* files, ReviewPtr* big_review_list, double* enderecos, int n, int reviews){
-
-    RedBlackTree* arv = new RedBlackTree();
+float cronometrarInsercaoRBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review_list, double* enderecos, int n, int , double* comparacoes_insercao){
     double* enderecos_list = new double[n];
-    ReviewPtr *review_list =  cronometrarReviewListBalanceada(files, n, big_review_list, enderecos_list, enderecos, reviews);
 
     auto start = high_resolution_clock::now();
     for(int i = 0; i < n; i++){
-        arv->inserir(enderecos_list[i], review_list[i]->getReviewId());
+        arv->inserir(enderecos_list[i], review_list[i]->getReviewId(), comparacoes_insercao);
     }
 
     //cronometrando o tempo de execucao
@@ -277,9 +261,134 @@ float cronometrarRedBlackTree(ifstream* files, ReviewPtr* big_review_list, doubl
     auto duration = duration_cast<microseconds>(stop - start);
     //cout << "imprimindo:" << endl;
     //arv->emOrdem();
-    delete arv;
+
     delete [] enderecos_list;
     return duration.count() / pow(10, 6);
+}
+
+float cronometrarBusca_RBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review_list, int n, double* comparacoes_busca, int buscas){
+    ReviewPtr *search_list =  cronometrarReviewList(files, buscas, review_list, n);
+    auto start = high_resolution_clock::now();
+
+    for(int i = 0; i < buscas; i++){
+        arv->buscar(search_list[i]->getReviewId(), comparacoes_busca);
+    }
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    return duration.count() / pow(10, 6);
+}
+
+void cronometrarRBT(ifstream* files, int n, ReviewPtr *big_review_list, double* enderecos, int reviews){
+
+    double* enderecos_list = new double[n];
+    //variavel para cronometrar o tempo de execucao
+    auto start = high_resolution_clock::now();
+
+    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    RedBlackTree* arv = new RedBlackTree();
+
+    double insercao_total = 0;
+    double busca_total = 0;
+    double comparacoes_insercao_total = 0;
+    double comparacoes_busca_total = 0;
+    for(int i = 0; i < 3; i++){
+        double comparacoes_insercao = 0;
+        double comparacoes_busca = 0;
+        double tempo_insercao = cronometrarInsercaoRBT(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
+        double tempo_busca = cronometrarBusca_RBT(files, arv, review_list, n, &comparacoes_busca, 100);
+        cout << "#--------------- Arvore Vermelho-Preto ----------------------#" << endl;
+        cout << "tempo de execuacao para insercao de 1000000 registros: " << endl;
+        cout << tempo_insercao << " segundos" << endl;
+        cout << "comparacoes: " << comparacoes_insercao << endl;
+        cout << "tempo de execuacao para busca de 100 registros: " << endl;
+        cout << tempo_busca << " segundos" << endl;
+        cout << "comparacoes: " << comparacoes_busca << endl;
+        cout << "#----------------------------------------------------------#" << endl << endl;
+        insercao_total += tempo_insercao;
+        busca_total += busca_total;
+        comparacoes_insercao_total += comparacoes_insercao;
+        comparacoes_busca_total += comparacoes_busca;
+    }
+
+    cout << "#--------------- Arvore Vermelho-Preto Medias---------------------#" << endl;
+    cout << "tempo de execuacao medio para insercao de 1000000 registros: " << endl;
+    cout << insercao_total/3 << " segundos" << endl;
+    cout << "media de comparacoes: " << comparacoes_insercao_total/3 << endl;
+    cout << "tempo de execuacao medio para busca de 100 registros: " << endl;
+    cout << busca_total/3 << " segundos" << endl;
+    cout << "media comparacoes: " << comparacoes_busca_total/3 << endl;
+    cout << "#----------------------------------------------------------#" << endl << endl;
+
+    delete arv;
+
+}
+
+void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* enderecos, int reviews, string path){
+    ofstream txt_file;
+    txt_file.open((path + "saida.txt"), ios::out | ios::trunc);
+
+    int n = 0;
+    int m = 0;
+    cout << "Quantas reviews voce quer importar Para a Arvore Vermelho-Preto?" << endl;
+    cin >> n;
+    cout << "Quantas reviews voce quer buscar na Arvore Vermelho-Preto?" << endl;
+    cin >> m;
+
+
+    double* enderecos_list = new double[n];
+    //variavel para cronometrar o tempo de execucao
+    auto start = high_resolution_clock::now();
+
+    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    RedBlackTree* arv = new RedBlackTree();
+
+    double insercao_total = 0;
+    double busca_total = 0;
+    double comparacoes_insercao_total = 0;
+    double comparacoes_busca_total = 0;
+    for(int i = 0; i < 3; i++){
+        double comparacoes_insercao = 0;
+        double comparacoes_busca = 0;
+        double tempo_insercao = cronometrarInsercaoRBT(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
+        double tempo_busca = cronometrarBusca_RBT(files, arv, review_list, n, &comparacoes_busca, m);
+        txt_file << "#--------------- Arvore Vermelho-Preto ----------------------#" << endl;
+        txt_file << "tempo de execuacao para insercao de " << n << "registros: " << endl;
+        txt_file << tempo_insercao << " segundos" << endl;
+        txt_file << "comparacoes: " << comparacoes_insercao << endl;
+        txt_file << "tempo de execuacao para busca de " << m << "registros: " << endl;
+        txt_file << tempo_busca << " segundos" << endl;
+        txt_file << "comparacoes: " << comparacoes_busca << endl;
+        txt_file << "#----------------------------------------------------------#" << endl << endl;
+        insercao_total += tempo_insercao;
+        busca_total += busca_total;
+        comparacoes_insercao_total += comparacoes_insercao;
+        comparacoes_busca_total += comparacoes_busca;
+    }
+
+    txt_file << "#--------------- Arvore Vermelho-Preto Medias---------------------#" << endl;
+    txt_file << "tempo de execuacao medio para insercao de " << n << "registros: " << endl;
+    txt_file << insercao_total/3 << " segundos" << endl;
+    txt_file << "media de comparacoes: " << comparacoes_insercao_total/3 << endl;
+    txt_file << "tempo de execuacao medio para busca de " << m << "registros: " << endl;
+    txt_file << busca_total/3 << " segundos" << endl;
+    txt_file << "media de comparacoes: " << comparacoes_busca_total/3 << endl;
+    txt_file << "#----------------------------------------------------------#" << endl << endl;
+
+    delete arv;
+
 }
 
 void selecionar(int selecao, ifstream* files, string path){
@@ -453,13 +562,11 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 4:{
-            int n = 1000000;
-
-            double tempo = cronometrarRedBlackTree(files, big_review_list, enderecos, n, reviews);
-            cout << "#---------------Arvore Vermelho-Preto----------------------#\"" << endl << endl;
-            cout << "tempo de execuacao para insercao de 1000000 de registros: " << endl;
-            cout << tempo << " segundos" << endl;
-            cout << "#----------------------------------------------------------#\"" << endl << endl;
+            cronometrarRBT(files, 1000000, big_review_list, enderecos, reviews);
+            break;
+        }
+        case 5:{
+            cronometrarRBT_teste(files, big_review_list, enderecos, reviews, path);
             break;
         }
     }
