@@ -2,24 +2,29 @@
 #include <fstream>
 #include <iostream>
 
-ReviewPtr* Process::importarBinario(ifstream* files, int *reviews){
-    files[0].seekg(0, ios::beg);
 
+int Process::getBinReviews(ifstream* files){
+    files[0].seekg(0, ios::beg);
     //setando posicoes no binario e descobrindo o numero total de reviews
     files[1].seekg(0, ios::end);
     int size = files[1].tellg();
     files[1].seekg(0, ios::beg);
-    (*reviews) = size/sizeof(int);
+    return size/sizeof(int);
+}
 
-    ReviewPtr* big_review_list = new ReviewPtr[(*reviews)];
+ReviewPtr* Process::importarBinario(ifstream* files, int reviews, double* enderecos){
+
+    ReviewPtr* big_review_list = new ReviewPtr[reviews];
 //    for (int i = 0; i < (*reviews); i++) {
 //        big_review_list [i] = new Review();
 //    }
-
-    for(int i = 0; i < (*reviews); i++){
-        big_review_list[i] = Review::desserializar_review(files[0]);
+    double total = 0;
+    for(int i = 0; i < reviews; i++){
+        int tamanho_review;
+        big_review_list[i] = Review::desserializar_review(files[0], &tamanho_review);
+        total += Review::getSizeOf(tamanho_review);
+        enderecos[i] = total;
     }
-
     return big_review_list;
 }
 
@@ -29,6 +34,24 @@ ReviewPtr* Process::importarReviewsRandomicas(ReviewPtr* big_review_list, int re
         ReviewPtr *small_review_list = new ReviewPtr[n];
         for (int i = 0; i < n; i++) {
             small_review_list[i] = big_review_list[int(rand() % reviews)];
+        }
+        return small_review_list;
+    } else{
+        cout << "Erro: valor maior do que o numero de reviews!" << endl;
+        exit(1);
+    }
+
+}
+
+ReviewPtr* Process::importarReviewsRandomicasBalanceadas(ReviewPtr* big_review_list, double* enderecos_list, double* enderecos, int reviews, int n){
+
+    if(n <= reviews) {
+        ReviewPtr *small_review_list = new ReviewPtr[n];
+        for (int i = 0; i < n; i++) {
+            int option = int(rand() % reviews);
+            small_review_list[i] = big_review_list[option];
+            enderecos_list[i] =  enderecos[option];
+
         }
         return small_review_list;
     } else{
@@ -297,7 +320,8 @@ void Process::acessaRegistro(ifstream* files){
         double peso = (char_total * sizeof(char)) + ((chosen - 1) * Review::getSizeOf(0));
         cout << "peso de leitura: " << endl;
         files[0].seekg(peso, ios::beg);
-        Review *review = Review::desserializar_review(files[0]);
+        int review_size;
+        Review *review = Review::desserializar_review(files[0], &review_size);
         review->print();
         files[1].clear();
         files[0].clear(); //limpa variaveis de arquivos
@@ -333,7 +357,8 @@ void Process::testeImportacao(ifstream* files, string path){
             int char_total = Review::desserializar_int(files[1]);
             double peso = (char_total * sizeof(char)) + ((option) * Review::getSizeOf(0));
             files[0].seekg(peso, ios::beg);
-            Review *review = Review::desserializar_review(files[0]);
+            int review_size;
+            Review *review = Review::desserializar_review(files[0], &review_size);
             review->print();
             files[1].clear();
             files[0].clear(); //limpa arquivos
@@ -353,7 +378,9 @@ void Process::testeImportacao(ifstream* files, string path){
             double peso = (char_total * sizeof(char)) + ((option) * Review::getSizeOf(0));
             files[0].seekg(peso, ios::beg);
 
-            Review *review = Review::desserializar_review(files[0]);
+
+            int review_size;
+            Review *review = Review::desserializar_review(files[0], &review_size);
             txt_file << "Review: " << option << endl;
             txt_file << "Id: " << review->getReviewId() << endl;
             txt_file << "App Version: " << review->getAppVersion() << endl;

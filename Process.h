@@ -10,7 +10,7 @@ typedef Review* ReviewPtr;
 class Process {
     public:
 
-        static ReviewPtr *importarBinario(ifstream *files, int *reviews);
+        static ReviewPtr *importarBinario(ifstream *files, int reviews, double* enderecos);
 
         static void strToData(int *current, char delimiter, char *object, char *buffer, int objectSize);
 
@@ -26,7 +26,11 @@ class Process {
 
         static void testeImportacao(ifstream *files, string path);
 
-        static ReviewPtr *importarReviewsRandomicas(ReviewPtr *big_review_list, int reviews, int n);
+        static ReviewPtr* importarReviewsRandomicas(ReviewPtr *big_review_list, int reviews, int n);
+
+        static ReviewPtr* importarReviewsRandomicasBalanceadas(ReviewPtr *big_review_list, double *enderecos_list, double *enderecos, int reviews, int n);
+
+        static int getBinReviews(ifstream *files);
 };
 
 

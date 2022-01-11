@@ -54,6 +54,20 @@ ReviewPtr* cronometrarReviewList(ifstream* files, int n, ReviewPtr *big_review_l
     return review_list;
 }
 
+ReviewPtr* cronometrarReviewListBalanceada(ifstream* files, int n, ReviewPtr *big_review_list, double* enderecos_list, double* enderecos, int reviews){
+
+    //variavel para cronometrar o tempo de execucao
+    auto start = high_resolution_clock::now();
+
+    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    //cout << "Tempo da importacao: " << duration.count() / pow(10, 6) << " seconds" << endl;
+    return review_list;
+}
+
 float cronometrarQuickSort(ifstream* files, ReviewPtr* big_review_list, int reviews, int n, int* movimentacoes, int* comparacoes){
 
     ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
@@ -247,39 +261,33 @@ float cronometrarHashTeste(ifstream* files, ReviewPtr* big_review_list, int n, i
     return duration.count() / pow(10, 6);
 }
 
-float cronometrarRedBlackTree(){
+float cronometrarRedBlackTree(ifstream* files, ReviewPtr* big_review_list, double* enderecos, int n, int reviews){
 
     RedBlackTree* arv = new RedBlackTree();
-
+    double* enderecos_list = new double[n];
+    ReviewPtr *review_list =  cronometrarReviewListBalanceada(files, n, big_review_list, enderecos_list, enderecos, reviews);
 
     auto start = high_resolution_clock::now();
-    //inserindo na arv vermelho-preto
-    char str1[2] = {'K', '\0'};
-    char str2[2] = {'A', '\0'};
-    char str3[2] = {'N', '\0'};
-    char str4[2] = {'B', '\0'};
-    char str5[2] = {'G', '\0'};
-    char str6[2] = {'O', '\0'};
-
-    arv->inserir(1, str1);
-    arv->inserir(1, str2);
-    arv->inserir(1, str3);
-    arv->inserir(1, str4);
-    arv->inserir(1, str5);
-    arv->inserir(1, str6);
+    for(int i = 0; i < n; i++){
+        arv->inserir(enderecos_list[i], review_list[i]->getReviewId());
+    }
 
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    cout << "imprimindo:" << endl;
-    arv->emOrdem();
-    //delete[] arv;
+    //cout << "imprimindo:" << endl;
+    //arv->emOrdem();
+    delete arv;
+    delete [] enderecos_list;
     return duration.count() / pow(10, 6);
 }
 
 void selecionar(int selecao, ifstream* files, string path){
-    int reviews = 0;
-    ReviewPtr* big_review_list = Process::importarBinario(files, &reviews);
+    int reviews = Process::getBinReviews(files);
+    double* enderecos = new double[reviews];
+    ReviewPtr* big_review_list = Process::importarBinario(files, reviews, enderecos);
+
+
     switch (selecao) {
         //Sair
         case 0: {
@@ -445,7 +453,13 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 4:{
-            cronometrarRedBlackTree();
+            int n = 1000000;
+
+            double tempo = cronometrarRedBlackTree(files, big_review_list, enderecos, n, reviews);
+            cout << "#---------------Arvore Vermelho-Preto----------------------#\"" << endl << endl;
+            cout << "tempo de execuacao para insercao de 1000000 de registros: " << endl;
+            cout << tempo << " segundos" << endl;
+            cout << "#----------------------------------------------------------#\"" << endl << endl;
             break;
         }
     }

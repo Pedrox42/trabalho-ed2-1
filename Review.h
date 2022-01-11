@@ -58,7 +58,9 @@ public:
 
     static char *desserializar_char(ifstream &bin_file);
 
-    static Review* desserializar_review(ifstream &bin_file);
+    static Review* desserializar_review(ifstream &bin_file, int* size);
+
+    static char* desserializar_reviewText(ifstream &bin_file, int* size);
 
     static int desserializar_int(ifstream &bin_file);
 

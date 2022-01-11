@@ -56,6 +56,7 @@ void RedBlackTree::emOrdemAux(RedBlackNode *p)
     cout << "---------- No --------" << endl;
     cout << "ID: " << p->getId() << endl;
     cout << "Cor: " << (p->getCor() ? "Preto" : "Vermelho") << endl;
+    cout << "endereco: " << p->getEnderecoMemoria() << endl;
     if(p->getPai() != nullptr){
         cout << "pai: " << p->getPai()->getId() << endl;
         if(p->getPai()->getEsq() != nullptr || p->getPai()->getDir() != nullptr){

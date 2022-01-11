@@ -141,6 +141,15 @@ char* Review::desserializar_char(ifstream& bin_file){
     return str;
 }
 
+char* Review::desserializar_reviewText(ifstream& bin_file, int* size){
+    char* str;
+    bin_file.read((char*)size, sizeof(int)); //Método usado para ler do arquivo binário
+    str = new char[(*size)];
+    bin_file.read((char*)str, (*size)*sizeof(char)); //Método usado para ler do arquivo binário
+    return str;
+}
+
+
 //Interpretar o arquivo binário para receber int e processar pelo código c++
 int Review::desserializar_int(ifstream& bin_file){
     int size;
@@ -170,10 +179,10 @@ void Review::serializar_review(ofstream& bin_file){
 
 //Ler e interpretar a review do arquivo binário, usando os métodos
 //desserializar com todos os atributos do objeto de acordo com seu tipo
-Review* Review::desserializar_review(ifstream& bin_file){
+Review* Review::desserializar_review(ifstream& bin_file, int* size){
     Review* review = new Review();
     review->setReviewId(desserializar_char(bin_file));
-    review->setReviewText(desserializar_char(bin_file));
+    review->setReviewText(desserializar_reviewText(bin_file, size));
     review->setUpvotes(desserializar_int(bin_file));
     review->setAppVersion(desserializar_char(bin_file));
     review->setPostedDate(desserializar_char(bin_file));
