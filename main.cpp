@@ -572,15 +572,11 @@ void selecionar(int selecao, ifstream* files, string path){
             break;
         }
         case 6:{
-            BTreeNode* node = new BTreeNode(4, true, 8);
+            BTreeNode* node = new BTreeNode(1, true, 2);
             char *str1 = new char[2];
             str1[0] = '4';
             str1[1] = '\0';
-//            char str2[2] = { '3', '\0'};
-//            char str3[2] = { '5', '\0'};
             node->inserirNaoCompleto(str1);
-//            node->inserirNaoCompleto(str2);
-//            node->inserirNaoCompleto(str3);
             node->navegar();
             break;
         }
