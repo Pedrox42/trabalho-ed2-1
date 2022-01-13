@@ -7,6 +7,7 @@
 #include "Sorts.h"
 #include "Process.h"
 #include "RedBlackTree.h"
+#include "BTreeNode.h"
 #include <ctime>
 #include <cmath>
 #include <chrono>
@@ -34,6 +35,7 @@ int menu(){
     cout << "[3] Modulo de testes" << endl;
     cout << "[4] Arvore Vermelho-Preto" << endl;
     cout << "[5] Arvore Vermelho-Preto testes" << endl;
+    cout << "[6] Arvore B" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -567,6 +569,19 @@ void selecionar(int selecao, ifstream* files, string path){
         }
         case 5:{
             cronometrarRBT_teste(files, big_review_list, enderecos, reviews, path);
+            break;
+        }
+        case 6:{
+            BTreeNode* node = new BTreeNode(4, true, 8);
+            char *str1 = new char[2];
+            str1[0] = '4';
+            str1[1] = '\0';
+//            char str2[2] = { '3', '\0'};
+//            char str3[2] = { '5', '\0'};
+            node->inserirNaoCompleto(str1);
+//            node->inserirNaoCompleto(str2);
+//            node->inserirNaoCompleto(str3);
+            node->navegar();
             break;
         }
     }
