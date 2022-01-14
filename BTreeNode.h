@@ -1,16 +1,21 @@
 #ifndef TRABALHO_ED2_1_BTREENODE_H
 #define TRABALHO_ED2_1_BTREENODE_H
+#include <iostream>
+#include <fstream>
 
+using namespace std;
 
 class BTreeNode
 {
     private:
         char valores[90][1000];  // Array contendo os valores
         int grau;      // grau minimino de chaves preenchidas
-        BTreeNode *chaves[1001]; // array dos ponteiros/enderecos de memoria
+        double chaves[1001]; // array dos ponteiros/enderecos de memoria
         int n;     // numero atual de chaves
         bool folha; // é verdadeiro quando um no é folha
         int tamanho;
+        BTreeNode* getNode(int i);
+
     public:
 
         // Construtor

@@ -95,7 +95,7 @@ void BTree::inserir(char *id) {
 
 
             // raiz antiga se torna filha da raiz velha
-            s->chaves[0] = raiz;
+            s->getNode(0) = raiz;
 
             // aplicando split na raiz antiga para reorganizar a arvore b
             s->splitFilho(0, raiz);
@@ -106,7 +106,7 @@ void BTree::inserir(char *id) {
             if (BTreeNode::compararId(id, s->valores[0])){
                 i++;
             }
-            s->chaves[i]->inserirNaoCompleto(id);
+            s->getNode(i)->inserirNaoCompleto(id);
 
             // mudando a raiz
             raiz = s;
