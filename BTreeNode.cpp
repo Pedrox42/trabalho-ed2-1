@@ -84,7 +84,7 @@ BTreeNode *BTreeNode::buscar(char* id)
         return nullptr;
 
     // Go to the appropriate child
-    return this->getNode(i)->buscar(id);
+    return chaves[i]->buscar(id);
 }
 
 void BTreeNode::inserirNaoCompleto(char* id)
@@ -114,19 +114,19 @@ void BTreeNode::inserirNaoCompleto(char* id)
         }
 
         // verificando se o filho encontrado esta completo
-        if (this->getNode(i+1)->getN() == tamanho)
+        if (chaves[i+1]->getN() == tamanho)
         {
             // se estiver completo, utilizar o split
-            splitFilho(i+1, this->getNode(i+1));
+            splitFilho(i+1, chaves[i+1]);
 
-            // depois do split, uma das chaves de this->getNode(i) sobe para o no pai
-            // this->getNode(i) eh separado em 2.
+            // depois do split, uma das chaves de chaves[i] sobe para o no pai
+            // chaves[i] eh separado em 2.
             // busca quais dos 2 recebera o valor
             if (compararId(id, valores[i+1])){
                 i++;
             }
         }
-        this->getNode(i+1)->inserirNaoCompleto(id);
+        chaves[i+1]->inserirNaoCompleto(id);
     }
 }
 
@@ -145,7 +145,7 @@ void BTreeNode::splitFilho(int i, BTreeNode *y)
     if (!y->folha)
     {
         for (int j = 0; j < grau; j++)
-            z->chaves[j] = y->chaves[j+grau];
+            *z->chaves[j] = *y->chaves[j+grau];
     }
 
     // reduzir o numero de chaves
@@ -156,7 +156,7 @@ void BTreeNode::splitFilho(int i, BTreeNode *y)
         chaves[j+1] = chaves[j];
 
     //linkando o novo no
-    *this->getNode(i+1) = *z;
+    *chaves[i+1] = *z;
 
     //buscando um novo no e movendo as chaves para abrir espaco
     for (int j = n-1; j >= i; j--)
@@ -178,25 +178,11 @@ void BTreeNode::navegar()
     {
         // se nao e uma folha, percorrer as chaves antes de imprimir,
         if (!folha)
-            this->getNode(i)->navegar();
+            chaves[i]->navegar();
         cout << " " << valores[i];
     }
 
     //  imprimindo os valores do ultimo no
     if (!folha)
-        this->getNode(i)->navegar();
-}
-
-BTreeNode* BTreeNode::getNode(int i){
-    if(i >= 0 && i < tamanho){
-        double indice = chaves[i];
-        BTreeNode *node;
-        ifstream file2;
-        file2.open("csv/BTree.bin", ios::in);
-        file2.read((char*)&node, sizeof(node));
-
-        return node;
-    } else{
-        cout << "Indice invalido!" << endl;
-    }
+        chaves[i]->navegar();
 }

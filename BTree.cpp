@@ -54,22 +54,6 @@ void BTree::inserir(char *id) {
         //esse no sera a raiz e seu tamanho atual (n) sera atualizado
         raiz = new BTreeNode(grau, true, tamanho);
 
-//        int b = 1;
-//        ofstream file;
-//        file.open("csv/BTree.bin", ios::binary | ios::trunc);
-//        file.write((char*)&raiz, sizeof(raiz));
-//        file.close();
-//
-//        cout << "escrita!" << endl;
-//
-//        ifstream file2;
-//        BTreeNode *teste;
-//        file2.open("csv/BTree.bin", ios::in);
-//        file2.read((char*)&teste, sizeof(teste));
-//
-//        cout << "testando leitura: " << teste->getTamanho() << endl;
-
-
         *raiz->valores[0] = *id;
         raiz->n = 1;
     }
@@ -95,7 +79,7 @@ void BTree::inserir(char *id) {
 
 
             // raiz antiga se torna filha da raiz velha
-            s->getNode(0) = raiz;
+            s->chaves[0] = raiz;
 
             // aplicando split na raiz antiga para reorganizar a arvore b
             s->splitFilho(0, raiz);
@@ -106,7 +90,7 @@ void BTree::inserir(char *id) {
             if (BTreeNode::compararId(id, s->valores[0])){
                 i++;
             }
-            s->getNode(i)->inserirNaoCompleto(id);
+            s->chaves[i]->inserirNaoCompleto(id);
 
             // mudando a raiz
             raiz = s;
