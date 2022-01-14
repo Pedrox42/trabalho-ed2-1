@@ -2,12 +2,15 @@
 #define TRABALHO_ED2_1_BTREENODE_H
 
 
+typedef char* id;
+
 class BTreeNode
 {
 private:
-    char valores[90][1000];  // Array contendo os valores
+    id* valores;  // Array contendo os valores
     int grau;      // grau minimino de chaves preenchidas
-    BTreeNode *chaves[1001]; // array dos ponteiros/enderecos de memoria
+    BTreeNode **chaves; // array dos ponteiros
+    double *enderecos; // array dos enderecos de memoria
     int n;     // numero atual de chaves
     bool folha; // é verdadeiro quando um no é folha
     int tamanho;
@@ -15,6 +18,9 @@ public:
 
     // Construtor
     BTreeNode(int grau, bool folha, int tamanho);
+
+    ~BTreeNode();
+
 
     //função para adicionar um novo id, desde que nao  o no esteja preenchido por completo
     void inserirNaoCompleto(char* id);

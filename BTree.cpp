@@ -11,6 +11,27 @@ BTree::BTree(int grau, int tamanho){
     tamanho = tamanho;
 }
 
+BTree::~BTree(){
+    libera(raiz);
+    raiz = nullptr;
+}
+
+// navegar entre os nos
+void BTree::libera(BTreeNode* node)
+{
+    // navegando pelos nos de i
+    int i;
+    for (i = 0; i < node->n; i++)
+    {
+        // se nao e uma folha, percorrer as chaves antes de liberar,
+        if (!node->folha) {
+            libera(node->chaves[i]);
+        }
+    }
+    cout << "core dump aki?" << endl;
+    delete node;
+}
+
 BTreeNode *BTree::getRaiz() {
     return raiz;
 }
@@ -53,8 +74,7 @@ void BTree::inserir(char *id) {
         // um novo no sera criado e o valor do id colocado nele
         //esse no sera a raiz e seu tamanho atual (n) sera atualizado
         raiz = new BTreeNode(grau, true, tamanho);
-
-        *raiz->valores[0] = *id;
+        raiz->valores[0] = id;
         raiz->n = 1;
     }
     else // caso a arvore nao esteja vazia
@@ -64,19 +84,6 @@ void BTree::inserir(char *id) {
         {
             // criando a nova raiz
             BTreeNode *s = new BTreeNode(grau, false, tamanho);
-
-            ofstream file;
-            file.open("csv'/BTree.bin", ios::out | ios::app | ios::binary);
-            file.write((char*)&s, sizeof(s));
-            file.close();
-
-            ifstream file2;
-            BTreeNode *teste;
-            file2.open("csv'/BTree.bin", ios::in | ios::binary);
-            file2.read((char*)&teste, sizeof(teste));
-
-            cout << "testando leitura: " << teste->getTamanho() << endl;
-
 
             // raiz antiga se torna filha da raiz velha
             s->chaves[0] = raiz;

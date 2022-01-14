@@ -2,16 +2,22 @@
 #define TRABALHO_ED2_1_BTREE_H
 #include "BTreeNode.h"
 
+
+
 class BTree
 {
     private:
         BTreeNode *raiz; // ponteiro para a raiz
-        int grau;  // Minimum degree
+        int grau;  // grau minimo
         int tamanho;
 
     public:
         // Constructor (Initializes tree as empty)
         BTree(int grau, int tamanho);
+
+        ~BTree();
+
+        void libera(BTreeNode* node);
 
         // funccao para percorrer a aravore
         void navegar();

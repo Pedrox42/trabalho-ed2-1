@@ -3,11 +3,19 @@
 
 using namespace std;
 
+typedef char* id;
+
+
 BTreeNode::BTreeNode(int grau, bool folha, int tamanho){
     this->grau = grau;
     this->folha = folha;
     this->n = 0;
     this->tamanho = tamanho;
+    this->valores = new id[tamanho];
+    this->chaves = new BTreeNode*[tamanho];
+}
+
+BTreeNode::~BTreeNode() {
 }
 
 int BTreeNode::getGrau() {
@@ -52,17 +60,13 @@ void BTreeNode::setTamanho(int tamanho) {
 
 bool BTreeNode::compararId(char* id1, char* id2){
     int i = 0;
-//    cout << "teste" << endl;
     for(i = 0; id1[i] != '\0' && id1[i] == id2[i]; i++);
-//    cout << (id1[i] > id2[i]) << endl;
     return id1[i] > id2[i];
 }
 
 bool BTreeNode::idIgual(char* id1, char* id2){
     int i = 0;
-//    cout << "teste" << endl;
     for(i = 0; id1[i] != '\0' && id1[i] == id2[i]; i++);
-//    cout << (id1[i] > id2[i]) << endl;
     return id1[i] == id2[i];
 }
 
@@ -96,19 +100,22 @@ void BTreeNode::inserirNaoCompleto(char* id)
     if (folha)
     {
         //encontra a posicao para o novo id e rarranja os ids "maiores"
+        cout << "while!" << endl;
         while (i >= 0 && compararId(valores[i], id))
         {
-            *valores[i+1] = *valores[i];
+            valores[i+1] = valores[i];
             i--;
         }
+        cout << "fim while!" << endl;
 
         //insere o valor na nova localizacao
-        *valores[i+1] = *id;
+        valores[i+1] = id;
         n++;
     }
-    else // se nao e chave
+    else // se nao e folha
     {
         // encontrando a chave para o valor
+        cout << "while nao folha!" << endl;
         while (i >= 0 && compararId(valores[i], id)){
             i--;
         }
@@ -117,6 +124,7 @@ void BTreeNode::inserirNaoCompleto(char* id)
         if (chaves[i+1]->getN() == tamanho)
         {
             // se estiver completo, utilizar o split
+            cout << "split!" << endl;
             splitFilho(i+1, chaves[i+1]);
 
             // depois do split, uma das chaves de chaves[i] sobe para o no pai
@@ -126,6 +134,7 @@ void BTreeNode::inserirNaoCompleto(char* id)
                 i++;
             }
         }
+        cout << "nao completo reprise" << endl;
         chaves[i+1]->inserirNaoCompleto(id);
     }
 }
@@ -139,13 +148,13 @@ void BTreeNode::splitFilho(int i, BTreeNode *y)
 
     // passando as chaves depois do grau
     for (int j = 0; j < grau-1 && j+grau < tamanho; j++)
-        *z->valores[j] = *y->valores[j+grau];
+        z->valores[j] = y->valores[j+grau];
 
     // copiar o ultimo de grau filho de y para z
     if (!y->folha)
     {
         for (int j = 0; j < grau; j++)
-            *z->chaves[j] = *y->chaves[j+grau];
+            z->chaves[j] = y->chaves[j+grau];
     }
 
     // reduzir o numero de chaves
@@ -156,14 +165,14 @@ void BTreeNode::splitFilho(int i, BTreeNode *y)
         chaves[j+1] = chaves[j];
 
     //linkando o novo no
-    *chaves[i+1] = *z;
+    chaves[i+1] = z;
 
     //buscando um novo no e movendo as chaves para abrir espaco
     for (int j = n-1; j >= i; j--)
-        *valores[j+1] = *valores[j];
+        valores[j+1] = valores[j];
 
     //copiando a espaco de y para
-    *valores[i] = *y->valores[grau-1];
+    valores[i] = y->valores[grau-1];
 
     // incrementando n
     n = n + 1;
