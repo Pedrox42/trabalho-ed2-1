@@ -8,6 +8,7 @@
 #include "Process.h"
 #include "RedBlackTree.h"
 #include "BTreeNode.h"
+#include "BTree.h"
 #include <ctime>
 #include <cmath>
 #include <chrono>
@@ -42,6 +43,8 @@ int menu(){
 
     return selecao;
 }
+
+
 
 ReviewPtr* cronometrarReviewList(ifstream* files, int n, ReviewPtr *big_review_list, int reviews){
 
@@ -572,12 +575,28 @@ void selecionar(int selecao, ifstream* files, string path){
             break;
         }
         case 6:{
-            BTreeNode* node = new BTreeNode(1, true, 2);
-            char *str1 = new char[2];
+            BTree* tree = new BTree(1,2);
+            char* str4 = new char[2];
+            str4[0] = '8';
+            str4[1] = '\0';
+            char* str1 = new char[2];
             str1[0] = '4';
             str1[1] = '\0';
-            node->inserirNaoCompleto(str1);
-            node->navegar();
+            char* str2 = new char[2];
+            str2[0] = '5';
+            str2[1] = '\0';
+            char* str3 = new char[2];
+            str3[0] = '3';
+            str3[1] = '\0';
+            char* str5 = new char[2];
+            str5[0] = '1';
+            str5[1] = '\0';
+            tree->inserir(str5);
+            tree->inserir(str4);
+            tree->inserir(str1);
+            tree->inserir(str2);
+            tree->inserir(str3);
+            tree->navegar();
             break;
         }
     }

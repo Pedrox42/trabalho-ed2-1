@@ -46,16 +46,16 @@ class BTreeNode
 
         void setFolha(bool folha);
 
-    int getTamanho();
+        int getTamanho();
 
-    void setTamanho(int tamanho);
+        void setTamanho(int tamanho);
 
 
-    friend class BTree;
+        friend class BTree;
 
-    bool compararId(char *id1, char *id2);
+        static bool compararId(char *id1, char *id2);
 
-    bool idIgual(char *id1, char *id2);
+        static bool idIgual(char *id1, char *id2);
 };
 
 

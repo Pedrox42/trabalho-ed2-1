@@ -89,106 +89,100 @@ BTreeNode *BTreeNode::buscar(char* id)
 
 void BTreeNode::inserirNaoCompleto(char* id)
 {
-    // Initialize index as index of rightmost element
+    // inicializa como no index mais a direita
     int i = n-1;
 
-    // If this is a leaf node
-    if (folha && n < tamanho)
+    // se eh folha ou esta dentro do tamanho possivel
+    if (folha)
     {
-        // The following loop does two things
-        // a) Finds the location of new key to be inserted
-        // b) Moves all greater keys to one place ahead
+        //encontra a posicao para o novo id e rarranja os ids "maiores"
         while (i >= 0 && compararId(valores[i], id))
         {
             *valores[i+1] = *valores[i];
             i--;
         }
 
-        // Insert the new key at found location
+        //insere o valor na nova localizacao
         *valores[i+1] = *id;
         n++;
     }
-    else // If this node is not leaf
+    else // se nao e chave
     {
-        // Find the child which is going to have the new key
-        while (i >= 0 && compararId(valores[i], id))
+        // encontrando a chave para o valor
+        while (i >= 0 && compararId(valores[i], id)){
             i--;
+        }
 
-        // See if the found child is full
+        // verificando se o filho encontrado esta completo
         if (chaves[i+1]->getN() == tamanho)
         {
-            // If the child is full, then split it
+            // se estiver completo, utilizar o split
             splitFilho(i+1, chaves[i+1]);
 
-            // After split, the middle key of C[i] goes up and
-            // C[i] is splitted into two.  See which of the two
-            // is going to have the new key
-            if (compararId(id, valores[i+1]))
+            // depois do split, uma das chaves de chaves[i] sobe para o no pai
+            // chaves[i] eh separado em 2.
+            // busca quais dos 2 recebera o valor
+            if (compararId(id, valores[i+1])){
                 i++;
+            }
         }
         chaves[i+1]->inserirNaoCompleto(id);
     }
 }
 
-// A utility function to split the child y of this node
-// Note that y must be full when this function is called
+//funcao para splitar filho
 void BTreeNode::splitFilho(int i, BTreeNode *y)
 {
-    // Create a new node which is going to store (t-1) keys
-    // of y
+    // criando no novo
     BTreeNode *z = new BTreeNode(y->grau, y->folha, y->tamanho);
     z->n = grau - 1;
 
-    // Copy the last (t-1) keys of y to z
+    // passando as chaves depois do grau
     for (int j = 0; j < grau-1 && j+grau < tamanho; j++)
         *z->valores[j] = *y->valores[j+grau];
 
-    // Copy the last t children of y to z
+    // copiar o ultimo de grau filho de y para z
     if (!y->folha)
     {
         for (int j = 0; j < grau; j++)
             *z->chaves[j] = *y->chaves[j+grau];
     }
 
-    // Reduce the number of keys in y
+    // reduzir o numero de chaves
     y->n = grau - 1;
 
-    // Since this node is going to have a new child,
-    // create space of new child
+    // criando uma chave e espaco para uma nova chave
     for (int j = n; j >= i+1; j--)
         chaves[j+1] = chaves[j];
 
-    // Link the new child to this node
+    //linkando o novo no
     *chaves[i+1] = *z;
 
-    // A key of y will move to this node. Find the location of
-    // new key and move all greater keys one space ahead
+    //buscando um novo no e movendo as chaves para abrir espaco
     for (int j = n-1; j >= i; j--)
         *valores[j+1] = *valores[j];
 
-    // Copy the middle key of y to this node
+    //copiando a espaco de y para
     *valores[i] = *y->valores[grau-1];
 
-    // Increment count of keys in this node
+    // incrementando n
     n = n + 1;
 }
 
-// Function to traverse all nodes in a subtree rooted with this node
+// navegar entre os nos
 void BTreeNode::navegar()
 {
-    // There are n keys and n+1 children, traverse through n keys
-    // and first n children
+    //navegando pelos nos de i
     int i;
     for (i = 0; i < n; i++)
     {
-        // If this is not leaf, then before printing key[i],
-        // traverse the subtree rooted with child C[i].
+        // se nao e uma folha, percorrer as chaves antes de imprimir,
         if (!folha)
             chaves[i]->navegar();
         cout << " " << valores[i];
     }
 
-    // Print the subtree rooted with last child
+    //  imprimindo os valores do ultimo no
     if (!folha)
         chaves[i]->navegar();
 }
