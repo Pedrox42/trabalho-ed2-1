@@ -1,5 +1,7 @@
 #include "BTree.h"
 #include <iostream>
+#include <fstream>
+
 
 using namespace std;
 
@@ -51,6 +53,23 @@ void BTree::inserir(char *id) {
         // um novo no sera criado e o valor do id colocado nele
         //esse no sera a raiz e seu tamanho atual (n) sera atualizado
         raiz = new BTreeNode(grau, true, tamanho);
+
+//        int b = 1;
+//        ofstream file;
+//        file.open("csv/BTree.bin", ios::binary | ios::trunc);
+//        file.write((char*)&raiz, sizeof(raiz));
+//        file.close();
+//
+//        cout << "escrita!" << endl;
+//
+//        ifstream file2;
+//        BTreeNode *teste;
+//        file2.open("csv/BTree.bin", ios::in);
+//        file2.read((char*)&teste, sizeof(teste));
+//
+//        cout << "testando leitura: " << teste->getTamanho() << endl;
+
+
         *raiz->valores[0] = *id;
         raiz->n = 1;
     }
@@ -61,6 +80,19 @@ void BTree::inserir(char *id) {
         {
             // criando a nova raiz
             BTreeNode *s = new BTreeNode(grau, false, tamanho);
+
+            ofstream file;
+            file.open("csv'/BTree.bin", ios::out | ios::app | ios::binary);
+            file.write((char*)&s, sizeof(s));
+            file.close();
+
+            ifstream file2;
+            BTreeNode *teste;
+            file2.open("csv'/BTree.bin", ios::in | ios::binary);
+            file2.read((char*)&teste, sizeof(teste));
+
+            cout << "testando leitura: " << teste->getTamanho() << endl;
+
 
             // raiz antiga se torna filha da raiz velha
             s->chaves[0] = raiz;

@@ -591,11 +591,13 @@ void selecionar(int selecao, ifstream* files, string path){
             char* str5 = new char[2];
             str5[0] = '1';
             str5[1] = '\0';
+
             tree->inserir(str5);
             tree->inserir(str4);
             tree->inserir(str1);
             tree->inserir(str2);
             tree->inserir(str3);
+
             tree->navegar();
             break;
         }
