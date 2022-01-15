@@ -38,6 +38,7 @@ int menu(){
     cout << "[5] Arvore Vermelho-Preto testes" << endl;
     cout << "[6] Arvore B [20]" << endl;
     cout << "[7] Arvore B [200]" << endl;
+    cout << "[8] Arvore B testes" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -406,10 +407,10 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
         double tempo_insercao = cronometrarInsercaoRBT(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
         double tempo_busca = cronometrarBusca_RBT(files, arv, review_list, n, &comparacoes_busca, m);
         txt_file << "#--------------- Arvore Vermelho-Preto ----------------------#" << endl;
-        txt_file << "tempo de execuacao para insercao de " << n << "registros: " << endl;
+        txt_file << "tempo de execuacao para insercao de " << n << " registros: " << endl;
         txt_file << tempo_insercao << " segundos" << endl;
         txt_file << "comparacoes: " << comparacoes_insercao << endl;
-        txt_file << "tempo de execuacao para busca de " << m << "registros: " << endl;
+        txt_file << "tempo de execuacao para busca de " << m << " registros: " << endl;
         txt_file << tempo_busca << " segundos" << endl;
         txt_file << "comparacoes: " << comparacoes_busca << endl;
         txt_file << "#----------------------------------------------------------#" << endl << endl;
@@ -420,10 +421,74 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
     }
 
     txt_file << "#--------------- Arvore Vermelho-Preto Medias---------------------#" << endl;
-    txt_file << "tempo de execuacao medio para insercao de " << n << "registros: " << endl;
+    txt_file << "tempo de execuacao medio para insercao de " << n << " registros: " << endl;
     txt_file << insercao_total/3 << " segundos" << endl;
     txt_file << "media de comparacoes: " << comparacoes_insercao_total/3 << endl;
-    txt_file << "tempo de execuacao medio para busca de " << m << "registros: " << endl;
+    txt_file << "tempo de execuacao medio para busca de " << m << " registros: " << endl;
+    txt_file << busca_total/3 << " segundos" << endl;
+    txt_file << "media de comparacoes: " << comparacoes_busca_total/3 << endl;
+    txt_file << "#----------------------------------------------------------#" << endl << endl;
+
+    delete arv;
+    delete [] review_list;
+    delete [] enderecos_list;
+
+}
+
+void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double* enderecos, int reviews, string path){
+    ofstream txt_file;
+    txt_file.open((path + "saida.txt"), ios::out | ios::trunc);
+
+    int n = 0;
+    int m = 0;
+    int b = 0;
+    cout << "Qual o numero maximo de filhos Para a Arvore B?" << endl;
+    cin >> b;
+    cout << "Quantas reviews voce quer importar Para a Arvore B?" << endl;
+    cin >> n;
+    cout << "Quantas reviews voce quer buscar na Arvore B?" << endl;
+    cin >> m;
+
+    double* enderecos_list = new double[n];
+    //variavel para cronometrar o tempo de execucao
+    auto start = high_resolution_clock::now();
+
+    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    BTree* arv = new BTree(b/2, b);
+
+    double insercao_total = 0;
+    double busca_total = 0;
+    double comparacoes_insercao_total = 0;
+    double comparacoes_busca_total = 0;
+    for(int i = 0; i < 3; i++){
+        double comparacoes_insercao = 0;
+        double comparacoes_busca = 0;
+        double tempo_insercao = cronometrarInsercao_BTree(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
+        double tempo_busca = cronometrarBusca_BTree(files, arv, review_list, n, &comparacoes_busca, m);
+        txt_file << "#--------------- Arvore B [" << b << "]  ----------------------#" << endl;
+        txt_file << "tempo de execuacao para insercao de " << n << " registros: " << endl;
+        txt_file << tempo_insercao << " segundos" << endl;
+        txt_file << "comparacoes: " << comparacoes_insercao << endl;
+        txt_file << "tempo de execuacao para busca de " << m << " registros: " << endl;
+        txt_file << tempo_busca << " segundos" << endl;
+        txt_file << "comparacoes: " << comparacoes_busca << endl;
+        txt_file << "#----------------------------------------------------------#" << endl << endl;
+        insercao_total += tempo_insercao;
+        busca_total += busca_total;
+        comparacoes_insercao_total += comparacoes_insercao;
+        comparacoes_busca_total += comparacoes_busca;
+    }
+
+    txt_file << "#--------------- Arvore b [" << b << "] Medias---------------------#" << endl;
+    txt_file << "tempo de execuacao medio para insercao de " << n << " registros: " << endl;
+    txt_file << insercao_total/3 << " segundos" << endl;
+    txt_file << "media de comparacoes: " << comparacoes_insercao_total/3 << endl;
+    txt_file << "tempo de execuacao medio para busca de " << m << " registros: " << endl;
     txt_file << busca_total/3 << " segundos" << endl;
     txt_file << "media de comparacoes: " << comparacoes_busca_total/3 << endl;
     txt_file << "#----------------------------------------------------------#" << endl << endl;
@@ -673,6 +738,10 @@ void selecionar(int selecao, ifstream* files, string path){
         }
         case 7:{
             cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 200);
+            break;
+        }
+        case 8:{
+            cronometrarBTree_teste(files, big_review_list, enderecos, reviews, path);
             break;
         }
     }
