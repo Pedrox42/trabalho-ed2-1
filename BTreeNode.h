@@ -4,13 +4,17 @@
 
 typedef char* id;
 
+ struct data{
+    id idText;
+    double endereco;
+};
+
 class BTreeNode
 {
 private:
-    id* valores;  // Array contendo os valores
+    data** valores;  // Array contendo os valores
     int grau;      // grau minimino de chaves preenchidas
     BTreeNode **chaves; // array dos ponteiros
-    double *enderecos; // array dos enderecos de memoria
     int n;     // numero atual de chaves
     bool folha; // é verdadeiro quando um no é folha
     int tamanho;
@@ -21,9 +25,8 @@ public:
 
     ~BTreeNode();
 
-
     //função para adicionar um novo id, desde que nao  o no esteja preenchido por completo
-    void inserirNaoCompleto(char* id);
+    void inserirNaoCompleto(char* id, double endereco, double* comparacoes);
 
     //funcao para dar split no filho do no y e i é o index de y apontando para o
     // no filho que sera splitado, o no filho deve estar cheio
@@ -34,7 +37,7 @@ public:
     void navegar();
 
     // funcao para buscar um valor dentro no
-    BTreeNode *buscar(char* id);// retorna null se k nao existir
+    BTreeNode *buscar(char* id, double* comparacoes);// retorna null se k nao existir
 
     int getGrau();
 
@@ -59,9 +62,9 @@ public:
 
     friend class BTree;
 
-    static bool compararId(char *id1, char *id2);
+    static bool compararId(char *id1, char *id2, double* comparacoes);
 
-    static bool idIgual(char *id1, char *id2);
+    static bool idIgual(char *id1, char *id2, double* comparacoes);
 };
 
 

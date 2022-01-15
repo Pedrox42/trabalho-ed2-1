@@ -36,7 +36,8 @@ int menu(){
     cout << "[3] Modulo de testes" << endl;
     cout << "[4] Arvore Vermelho-Preto" << endl;
     cout << "[5] Arvore Vermelho-Preto testes" << endl;
-    cout << "[6] Arvore B" << endl;
+    cout << "[6] Arvore B [20]" << endl;
+    cout << "[7] Arvore B [200]" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -253,7 +254,7 @@ float cronometrarHashTeste(ifstream* files, ReviewPtr* big_review_list, int n, i
     return duration.count() / pow(10, 6);
 }
 
-float cronometrarInsercaoRBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review_list, double* enderecos, int n, int , double* comparacoes_insercao){
+float cronometrarInsercaoRBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review_list, double* enderecos, int n, int reviews, double* comparacoes_insercao){
     double* enderecos_list = new double[n];
 
     auto start = high_resolution_clock::now();
@@ -271,7 +272,40 @@ float cronometrarInsercaoRBT(ifstream* files, RedBlackTree* arv, ReviewPtr* revi
     return duration.count() / pow(10, 6);
 }
 
+float cronometrarInsercao_BTree(ifstream* files, BTree* arv, ReviewPtr* review_list, double* enderecos, int n, int reviews, double* comparacoes_insercao){
+    double* enderecos_list = new double[n];
+
+    auto start = high_resolution_clock::now();
+    for(int i = 0; i < n; i++){
+        arv->inserir(review_list[i]->getReviewId(), enderecos_list[i], comparacoes_insercao);
+    }
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+    //cout << "imprimindo:" << endl;
+    //arv->emOrdem();
+
+    delete [] enderecos_list;
+    return duration.count() / pow(10, 6);
+}
+
 float cronometrarBusca_RBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review_list, int n, double* comparacoes_busca, int buscas){
+    ReviewPtr *search_list =  cronometrarReviewList(files, buscas, review_list, n);
+    auto start = high_resolution_clock::now();
+
+    for(int i = 0; i < buscas; i++){
+        arv->buscar(search_list[i]->getReviewId(), comparacoes_busca);
+    }
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    return duration.count() / pow(10, 6);
+}
+
+float cronometrarBusca_BTree(ifstream* files, BTree* arv, ReviewPtr* review_list, int n, double* comparacoes_busca, int buscas){
     ReviewPtr *search_list =  cronometrarReviewList(files, buscas, review_list, n);
     auto start = high_resolution_clock::now();
 
@@ -333,6 +367,8 @@ void cronometrarRBT(ifstream* files, int n, ReviewPtr *big_review_list, double* 
     cout << "#----------------------------------------------------------#" << endl << endl;
 
     delete arv;
+    delete [] review_list;
+    delete [] enderecos_list;
 
 }
 
@@ -393,6 +429,63 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
     txt_file << "#----------------------------------------------------------#" << endl << endl;
 
     delete arv;
+    delete [] review_list;
+    delete [] enderecos_list;
+
+}
+
+void cronometrarBTree(ifstream* files, int n, ReviewPtr *big_review_list, double* enderecos, int reviews, int b){
+
+    double* enderecos_list = new double[n];
+    //variavel para cronometrar o tempo de execucao
+    auto start = high_resolution_clock::now();
+
+    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    BTree* arv = new BTree(b/2, b);
+    cout << "criou arvore" << endl;
+
+    double insercao_total = 0;
+    double busca_total = 0;
+    double comparacoes_insercao_total = 0;
+    double comparacoes_busca_total = 0;
+    for(int i = 0; i < 3; i++){
+        double comparacoes_insercao = 0;
+        double comparacoes_busca = 0;
+        double tempo_insercao = cronometrarInsercao_BTree(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
+
+        double tempo_busca = cronometrarBusca_BTree(files, arv, review_list, n, &comparacoes_busca, 100);
+
+        cout << "#--------------- Arvore B [" << b << "] ----------------------#" << endl;
+        cout << "tempo de execuacao para insercao de 1000000 registros: " << endl;
+        cout << tempo_insercao << " segundos" << endl;
+        cout << "comparacoes: " << comparacoes_insercao << endl;
+        cout << "tempo de execuacao para busca de 100 registros: " << endl;
+        cout << tempo_busca << " segundos" << endl;
+        cout << "comparacoes: " << comparacoes_busca << endl;
+        cout << "#----------------------------------------------------------#" << endl << endl;
+        insercao_total += tempo_insercao;
+        busca_total += busca_total;
+        comparacoes_insercao_total += comparacoes_insercao;
+        comparacoes_busca_total += comparacoes_busca;
+    }
+
+    cout << "#--------------- Arvore B [" << b << "] Medias---------------------#" << endl;
+    cout << "tempo de execuacao medio para insercao de 1000000 registros: " << endl;
+    cout << insercao_total/3 << " segundos" << endl;
+    cout << "media de comparacoes: " << comparacoes_insercao_total/3 << endl;
+    cout << "tempo de execuacao medio para busca de 100 registros: " << endl;
+    cout << busca_total/3 << " segundos" << endl;
+    cout << "media comparacoes: " << comparacoes_busca_total/3 << endl;
+    cout << "#----------------------------------------------------------#" << endl << endl;
+
+    delete arv;
+    delete [] review_list;
+    delete [] enderecos_list;
 
 }
 
@@ -575,16 +668,11 @@ void selecionar(int selecao, ifstream* files, string path){
             break;
         }
         case 6:{
-            BTree* tree = new BTree(10,20);
-            ReviewPtr* review_list = cronometrarReviewList(files, 100000, big_review_list, reviews);
-            for(int i = 0; i < 100000; i++){
-                tree->inserir(review_list[i]->getReviewId());
-            }
-
-            cout << "teste" << endl;
-
-            delete tree;
-
+            cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 20);
+            break;
+        }
+        case 7:{
+            cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 200);
             break;
         }
     }
@@ -593,6 +681,7 @@ void selecionar(int selecao, ifstream* files, string path){
         delete big_review_list[i];
     }
     delete [] big_review_list;
+    delete [] enderecos;
 
 }
 

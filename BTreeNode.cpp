@@ -3,19 +3,18 @@
 
 using namespace std;
 
-typedef char* id;
-
-
 BTreeNode::BTreeNode(int grau, bool folha, int tamanho){
     this->grau = grau;
     this->folha = folha;
     this->n = 0;
     this->tamanho = tamanho;
-    this->valores = new id[tamanho];
+    this->valores = new data*[tamanho];
     this->chaves = new BTreeNode*[tamanho];
 }
 
 BTreeNode::~BTreeNode() {
+    delete chaves;
+    delete valores;
 }
 
 int BTreeNode::getGrau() {
@@ -58,41 +57,50 @@ void BTreeNode::setTamanho(int tamanho) {
     this->tamanho = tamanho;
 }
 
-bool BTreeNode::compararId(char* id1, char* id2){
+bool BTreeNode::compararId(char* id1, char* id2, double* comparacoes){
     int i = 0;
+    (*comparacoes)++;
     for(i = 0; id1[i] != '\0' && id1[i] == id2[i]; i++);
     return id1[i] > id2[i];
 }
 
-bool BTreeNode::idIgual(char* id1, char* id2){
+bool BTreeNode::idIgual(char* id1, char* id2, double* comparacoes){
     int i = 0;
+    (*comparacoes)++;
     for(i = 0; id1[i] != '\0' && id1[i] == id2[i]; i++);
     return id1[i] == id2[i];
 }
 
 
-// Function to search key k in subtree rooted with this node
-BTreeNode *BTreeNode::buscar(char* id)
+// funcao para pesquisar um id na arvore
+BTreeNode *BTreeNode::buscar(char* id, double* comparacoes)
 {
-    // Find the first key greater than or equal to k
+    //achar o primeiro valor maior que o id
     int i = 0;
-    while (i < n && compararId(id, valores[i]))
+    while (i < n && compararId(id, valores[i]->idText, comparacoes)){
         i++;
+    }
 
-    // If the found key is equal to k, return this node
-    if (idIgual(id, valores[i]))
+    // verificar se a chave eh igual
+    if (i < n && idIgual(id, valores[i]->idText, comparacoes)){
         return this;
+    }
 
-    // If key is not found here and this is a leaf node
-    if (folha)
+    // caso a chave nao tenha sido achada e seja uma folha
+    if (folha){
         return nullptr;
+    }
 
-    // Go to the appropriate child
-    return chaves[i]->buscar(id);
+    // continuar busca no filho apropriado caso nao seja folha
+    return chaves[i]->buscar(id, comparacoes);
 }
 
-void BTreeNode::inserirNaoCompleto(char* id)
+void BTreeNode::inserirNaoCompleto(char* id, double endereco, double* comparacoes)
 {
+    data* valor = new data();
+    valor->idText = id;
+    valor->endereco = endereco;
+
     // inicializa como no index mais a direita
     int i = n-1;
 
@@ -100,23 +108,21 @@ void BTreeNode::inserirNaoCompleto(char* id)
     if (folha)
     {
         //encontra a posicao para o novo id e rarranja os ids "maiores"
-        cout << "while!" << endl;
-        while (i >= 0 && compararId(valores[i], id))
+        (*comparacoes)++;
+        while (i >= 0 && compararId(valores[i]->idText, id, comparacoes))
         {
             valores[i+1] = valores[i];
             i--;
         }
-        cout << "fim while!" << endl;
 
         //insere o valor na nova localizacao
-        valores[i+1] = id;
+        valores[i+1] = valor;
         n++;
     }
     else // se nao e folha
     {
         // encontrando a chave para o valor
-        cout << "while nao folha!" << endl;
-        while (i >= 0 && compararId(valores[i], id)){
+        while (i >= 0 && compararId(valores[i]->idText, id, comparacoes)){
             i--;
         }
 
@@ -124,18 +130,16 @@ void BTreeNode::inserirNaoCompleto(char* id)
         if (chaves[i+1]->getN() == tamanho)
         {
             // se estiver completo, utilizar o split
-            cout << "split!" << endl;
             splitFilho(i+1, chaves[i+1]);
 
             // depois do split, uma das chaves de chaves[i] sobe para o no pai
             // chaves[i] eh separado em 2.
             // busca quais dos 2 recebera o valor
-            if (compararId(id, valores[i+1])){
+            if (compararId(id, valores[i+1]->idText, comparacoes)){
                 i++;
             }
         }
-        cout << "nao completo reprise" << endl;
-        chaves[i+1]->inserirNaoCompleto(id);
+        chaves[i+1]->inserirNaoCompleto(id, endereco, comparacoes);
     }
 }
 
@@ -147,7 +151,7 @@ void BTreeNode::splitFilho(int i, BTreeNode *y)
     z->n = grau - 1;
 
     // passando as chaves depois do grau
-    for (int j = 0; j < grau-1 && j+grau < tamanho; j++)
+    for (int j = 0; j < grau-1; j++)
         z->valores[j] = y->valores[j+grau];
 
     // copiar o ultimo de grau filho de y para z
@@ -175,7 +179,7 @@ void BTreeNode::splitFilho(int i, BTreeNode *y)
     valores[i] = y->valores[grau-1];
 
     // incrementando n
-    n = n + 1;
+    n++;
 }
 
 // navegar entre os nos
@@ -188,7 +192,7 @@ void BTreeNode::navegar()
         // se nao e uma folha, percorrer as chaves antes de imprimir,
         if (!folha)
             chaves[i]->navegar();
-        cout << " " << valores[i];
+        cout <<  "id: " << valores[i]->idText << " endereco: " << valores[i]->endereco << endl;
     }
 
     //  imprimindo os valores do ultimo no

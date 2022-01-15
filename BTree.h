@@ -17,16 +17,16 @@ class BTree
 
         ~BTree();
 
-        void libera(BTreeNode* node);
+        //BTreeNode* libera(BTreeNode* node);
 
         // funccao para percorrer a aravore
         void navegar();
 
         // buscar por um id na arvore
-        BTreeNode* buscar(char* id);
+        BTreeNode* buscar(char* id, double* comparacoes);
 
         // The main function that inserts a new key in this B-Tree
-        void inserir(char* id);
+        void inserir(char* id, double endereco, double* comparacoes);
 
         BTreeNode *getRaiz();
 

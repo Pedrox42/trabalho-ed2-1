@@ -5,32 +5,36 @@
 
 using namespace std;
 
-BTree::BTree(int grau, int tamanho){
-    raiz = nullptr;
-    grau = grau;
-    tamanho = tamanho;
+BTree::BTree(int grau_var, int tamanho_var){
+    this->raiz = nullptr;
+    this->grau = grau_var;
+    this->tamanho = tamanho_var;
 }
 
 BTree::~BTree(){
-    libera(raiz);
-    raiz = nullptr;
+   // raiz = libera(raiz);
 }
 
 // navegar entre os nos
-void BTree::libera(BTreeNode* node)
-{
-    // navegando pelos nos de i
-    int i;
-    for (i = 0; i < node->n; i++)
-    {
-        // se nao e uma folha, percorrer as chaves antes de liberar,
-        if (!node->folha) {
-            libera(node->chaves[i]);
-        }
-    }
-    cout << "core dump aki?" << endl;
-    delete node;
-}
+//BTreeNode* BTree::libera(BTreeNode* node)
+//{
+//    // navegando pelos nos de i
+//    int i;
+//    if(node != nullptr){
+//        if (!node->folha) {
+//            for (i = node->n-1; i >= 0; i--) {
+//                // se nao e uma folha, percorrer as chaves antes de liberar,
+//                node->chaves[i] = libera(node->chaves[i]);
+//            }
+//        }
+//        cout << "delete node" << endl;
+//        cout << node << endl;
+//
+//        delete node;
+//    }
+//
+//    return nullptr;
+//}
 
 BTreeNode *BTree::getRaiz() {
     return raiz;
@@ -62,11 +66,15 @@ void BTree::navegar(){
     }
 }
 
-BTreeNode* BTree::buscar(char* id){
-    return (raiz == nullptr) ? nullptr : raiz->buscar(id);
+BTreeNode* BTree::buscar(char* id, double* comparacoes){
+    return (raiz == nullptr) ? nullptr : raiz->buscar(id, comparacoes);
 }
 
-void BTree::inserir(char *id) {
+void BTree::inserir(char *id, double endereco, double* comparacoes) {
+
+    data* valor = new data();
+    valor->idText = id;
+    valor->endereco = endereco;
 
     // caso a raiz seja nula
     if (raiz == nullptr)
@@ -74,7 +82,7 @@ void BTree::inserir(char *id) {
         // um novo no sera criado e o valor do id colocado nele
         //esse no sera a raiz e seu tamanho atual (n) sera atualizado
         raiz = new BTreeNode(grau, true, tamanho);
-        raiz->valores[0] = id;
+        raiz->valores[0] = valor;
         raiz->n = 1;
     }
     else // caso a arvore nao esteja vazia
@@ -94,16 +102,16 @@ void BTree::inserir(char *id) {
             //a nova raiz possui 2 filhos, splitados da raiz velha
             // two children is going to have new key
             int i = 0;
-            if (BTreeNode::compararId(id, s->valores[0])){
+            if (BTreeNode::compararId(id, s->valores[0]->idText, comparacoes)){
                 i++;
             }
-            s->chaves[i]->inserirNaoCompleto(id);
+            s->chaves[i]->inserirNaoCompleto(id, endereco, comparacoes);
 
             // mudando a raiz
             raiz = s;
         }
         else {
-            raiz->inserirNaoCompleto(id);
-        }  // caso a raiz nao esteja completa basta inserir utilizando a funcao 'inserirNaocompleto"
+            raiz->inserirNaoCompleto(id, endereco, comparacoes);
+        }  // caso a raiz nao esteja completa basta inserir utilizando a funcao 'inserirNaocompleto'
     }
 }
