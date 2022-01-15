@@ -35,10 +35,12 @@ int menu(){
     cout << "[2] Hash" << endl;
     cout << "[3] Modulo de testes" << endl;
     cout << "[4] Arvore Vermelho-Preto" << endl;
-    cout << "[5] Arvore Vermelho-Preto testes" << endl;
+    cout << "[5] Arvore Vermelho-Preto analises" << endl;
     cout << "[6] Arvore B [20]" << endl;
     cout << "[7] Arvore B [200]" << endl;
-    cout << "[8] Arvore B testes" << endl;
+    cout << "[8] Arvore B analises" << endl;
+    cout << "[9] Arvore Vermelho-Preto busca por id" << endl;
+    cout << "[10] Arvore B busca por id" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
@@ -306,6 +308,30 @@ float cronometrarBusca_RBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review
     return duration.count() / pow(10, 6);
 }
 
+float cronometrarBuscaId_RBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review_list, int n, double* comparacoes_busca, char* id){
+    auto start = high_resolution_clock::now();
+
+    arv->buscar(id, comparacoes_busca);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    return duration.count() / pow(10, 6);
+}
+
+float cronometrarBuscaId_BTree(ifstream* files, BTree* arv, ReviewPtr* review_list, int n, double* comparacoes_busca, char* id){
+    auto start = high_resolution_clock::now();
+
+    arv->buscar(id, comparacoes_busca);
+
+    //cronometrando o tempo de execucao
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    return duration.count() / pow(10, 6);
+}
+
 float cronometrarBusca_BTree(ifstream* files, BTree* arv, ReviewPtr* review_list, int n, double* comparacoes_busca, int buscas){
     ReviewPtr *search_list =  cronometrarReviewList(files, buscas, review_list, n);
     auto start = high_resolution_clock::now();
@@ -328,10 +354,6 @@ void cronometrarRBT(ifstream* files, int n, ReviewPtr *big_review_list, double* 
     auto start = high_resolution_clock::now();
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
-
-    //cronometrando o tempo de execucao
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
 
     RedBlackTree* arv = new RedBlackTree();
 
@@ -391,10 +413,6 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
-    //cronometrando o tempo de execucao
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-
     RedBlackTree* arv = new RedBlackTree();
 
     double insercao_total = 0;
@@ -442,7 +460,7 @@ void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double*
     int n = 0;
     int m = 0;
     int b = 0;
-    cout << "Qual o numero maximo de filhos Para a Arvore B?" << endl;
+    cout << "Qual e o numero maximo de filhos da Arvore B?" << endl;
     cin >> b;
     cout << "Quantas reviews voce quer importar Para a Arvore B?" << endl;
     cin >> n;
@@ -450,16 +468,10 @@ void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double*
     cin >> m;
 
     double* enderecos_list = new double[n];
-    //variavel para cronometrar o tempo de execucao
-    auto start = high_resolution_clock::now();
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
-    //cronometrando o tempo de execucao
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-
-    BTree* arv = new BTree(b/2, b);
+    BTree* arv = new BTree((int)(b+1)/2, b);
 
     double insercao_total = 0;
     double busca_total = 0;
@@ -507,11 +519,7 @@ void cronometrarBTree(ifstream* files, int n, ReviewPtr *big_review_list, double
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
-    //cronometrando o tempo de execucao
-    auto stop = high_resolution_clock::now();
-    auto duration = duration_cast<microseconds>(stop - start);
-
-    BTree* arv = new BTree(b/2, b);
+    BTree* arv = new BTree((int)(b+1)/2, b);
     cout << "criou arvore" << endl;
 
     double insercao_total = 0;
@@ -552,6 +560,74 @@ void cronometrarBTree(ifstream* files, int n, ReviewPtr *big_review_list, double
     delete [] review_list;
     delete [] enderecos_list;
 
+}
+
+void cronometrarRbtBuscaId(ifstream* files, ReviewPtr *big_review_list, double* enderecos, int reviews){
+    int n;
+    char* id = new char[90];
+    cout << "Quantas reviews voce deseja importar para a Arvore Vermelho-Preto?" << endl;
+    cin >> n;
+    cout << "Digite o id que deseja procurar: " << endl;
+    cin >> id;
+    double* enderecos_list = new double[n];
+
+    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
+
+    RedBlackTree* arv = new RedBlackTree();
+
+    double comparacoes_insercao = 0;
+    double comparacoes_busca = 0;
+    double tempo_insercao = cronometrarInsercaoRBT(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
+    double tempo_busca = cronometrarBuscaId_RBT(files, arv, review_list, n, &comparacoes_busca, id);
+    cout << "#--------------- Arvore Vermelho-Preto ----------------------#" << endl;
+    cout << "tempo de execuacao para insercao de " << n << " registros: " << endl;
+    cout << tempo_insercao << " segundos" << endl;
+    cout << "comparacoes: " << comparacoes_insercao << endl;
+    cout << "tempo de execuacao para busca do id: " << id << " registros: " << endl;
+    cout << tempo_busca << " segundos" << endl;
+    cout << "comparacoes: " << comparacoes_busca << endl;
+    cout << "#----------------------------------------------------------#" << endl << endl;
+
+    delete arv;
+    delete [] review_list;
+    delete [] enderecos_list;
+    delete [] id;
+}
+
+void cronometrarBTreeBuscaId(ifstream* files, ReviewPtr *big_review_list, double* enderecos, int reviews){
+    int n;
+    int b;
+    char* id = new char[90];
+    cout << "Digite numero de filhos maximo de B: " << endl;
+    cin >> b;
+    cout << "Quantas reviews voce deseja importar para a Arvore B?" << endl;
+    cin >> n;
+    cout << "Digite o id que deseja procurar: " << endl;
+    cin >> id;
+
+    double* enderecos_list = new double[n];
+
+    ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
+
+    BTree* arv = new BTree((int)(b+1)/2, b);
+
+    double comparacoes_insercao = 0;
+    double comparacoes_busca = 0;
+    double tempo_insercao = cronometrarInsercao_BTree(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
+    double tempo_busca = cronometrarBuscaId_BTree(files, arv, review_list, n, &comparacoes_busca, id);
+    cout << "#--------------- Arvore Vermelho-Preto ----------------------#" << endl;
+    cout << "tempo de execuacao para insercao de " << n << " registros: " << endl;
+    cout << tempo_insercao << " segundos" << endl;
+    cout << "comparacoes: " << comparacoes_insercao << endl;
+    cout << "tempo de execuacao para busca do id: " << id << " registros: " << endl;
+    cout << tempo_busca << " segundos" << endl;
+    cout << "comparacoes: " << comparacoes_busca << endl;
+    cout << "#----------------------------------------------------------#" << endl << endl;
+
+    delete arv;
+    delete [] review_list;
+    delete [] enderecos_list;
+    delete [] id;
 }
 
 void selecionar(int selecao, ifstream* files, string path){
@@ -742,6 +818,14 @@ void selecionar(int selecao, ifstream* files, string path){
         }
         case 8:{
             cronometrarBTree_teste(files, big_review_list, enderecos, reviews, path);
+            break;
+        }
+        case 9:{
+            cronometrarRbtBuscaId(files, big_review_list, enderecos, reviews);
+            break;
+        }
+        case 10:{
+            cronometrarBTreeBuscaId(files, big_review_list, enderecos, reviews);
             break;
         }
     }
