@@ -29,23 +29,48 @@ int menu(){
     int selecao;
 
     //menu para que o usuário possa escolher a função na qual ele queira executar no momento
-    cout << "MENU" << endl;
-    cout << "----" << endl;
-    cout << "[1] Ordenacao" << endl;
-    cout << "[2] Hash" << endl;
-    cout << "[3] Modulo de testes" << endl;
-    cout << "[4] Arvore Vermelho-Preto" << endl;
-    cout << "[5] Arvore Vermelho-Preto analises" << endl;
-    cout << "[6] Arvore B [20]" << endl;
-    cout << "[7] Arvore B [200]" << endl;
-    cout << "[8] Arvore B analises" << endl;
-    cout << "[9] Arvore Vermelho-Preto busca por id" << endl;
-    cout << "[10] Arvore B busca por id" << endl;
+    cout << "-------------------" << endl;
+    cout << "       MENU" << endl;
+    cout << "-------------------" << endl;
+    cout << "[1] Arvore Vermelho-Preto" << endl;
+    cout << "[2] Arvore B" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
 
-    return selecao;
+    int compensar=0;
+
+    switch (selecao) {
+        case 0: {
+            return selecao;
+        }
+        case 1: {
+            cout << "-------------------" << endl;
+            cout << "       MENU" << endl;
+            cout << "-------------------" << endl;
+            cout << "[1] Arvore Vermelho-Preto" << endl;
+            cout << "[2] Arvore Vermelho-Preto analises" << endl;
+            cout << "[3] Arvore Vermelho-Preto busca por id" << endl;
+            cout << "[0] Sair" << endl;
+            break;
+        }
+        case 2: {
+            cout << "-------------------" << endl;
+            cout << "       MENU" << endl;
+            cout << "-------------------" << endl;
+            cout << "[1] Arvore B [20]" << endl;
+            cout << "[2] Arvore B [200]" << endl;
+            cout << "[3] Arvore B analises" << endl;
+            cout << "[4] Arvore B busca por id" << endl;
+            cout << "[0] Sair" << endl;
+            compensar=3;
+            break;
+        }
+
+    }
+    cin >> selecao;
+
+    return selecao == 0 ? 0 : selecao+compensar;
 }
 
 
@@ -431,11 +456,12 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
         txt_file << "tempo de execuacao para busca de " << m << " registros: " << endl;
         txt_file << tempo_busca << " segundos" << endl;
         txt_file << "comparacoes: " << comparacoes_busca << endl;
-        txt_file << "#----------------------------------------------------------#" << endl << endl;
+        txt_file << "#------------------------------------------------------------#" << endl << endl;
         insercao_total += tempo_insercao;
         busca_total += busca_total;
         comparacoes_insercao_total += comparacoes_insercao;
         comparacoes_busca_total += comparacoes_busca;
+        cout << "Processando..." << endl;
     }
 
     txt_file << "#--------------- Arvore Vermelho-Preto Medias---------------------#" << endl;
@@ -445,7 +471,9 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
     txt_file << "tempo de execuacao medio para busca de " << m << " registros: " << endl;
     txt_file << busca_total/3 << " segundos" << endl;
     txt_file << "media de comparacoes: " << comparacoes_busca_total/3 << endl;
-    txt_file << "#----------------------------------------------------------#" << endl << endl;
+    txt_file << "#-----------------------------------------------------------------#" << endl << endl;
+
+    cout << "Processo concluido com sucesso! Dados salvos no arquivo saida.txt." << endl;
 
     delete arv;
     delete [] review_list;
@@ -489,11 +517,12 @@ void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double*
         txt_file << "tempo de execuacao para busca de " << m << " registros: " << endl;
         txt_file << tempo_busca << " segundos" << endl;
         txt_file << "comparacoes: " << comparacoes_busca << endl;
-        txt_file << "#----------------------------------------------------------#" << endl << endl;
+        txt_file << "#-------------------------------------------------------------#" << endl << endl;
         insercao_total += tempo_insercao;
         busca_total += busca_total;
         comparacoes_insercao_total += comparacoes_insercao;
         comparacoes_busca_total += comparacoes_busca;
+        cout << "Processando..." << endl;
     }
 
     txt_file << "#--------------- Arvore b [" << b << "] Medias---------------------#" << endl;
@@ -503,7 +532,9 @@ void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double*
     txt_file << "tempo de execuacao medio para busca de " << m << " registros: " << endl;
     txt_file << busca_total/3 << " segundos" << endl;
     txt_file << "media de comparacoes: " << comparacoes_busca_total/3 << endl;
-    txt_file << "#----------------------------------------------------------#" << endl << endl;
+    txt_file << "#-----------------------------------------------------------------#" << endl << endl;
+
+    cout << "Processo concluido com sucesso! Dados salvos no arquivo saida.txt." << endl;
 
     delete arv;
     delete [] review_list;
@@ -520,7 +551,6 @@ void cronometrarBTree(ifstream* files, int n, ReviewPtr *big_review_list, double
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
     BTree* arv = new BTree((int)(b+1)/2, b);
-    cout << "criou arvore" << endl;
 
     double insercao_total = 0;
     double busca_total = 0;
@@ -586,7 +616,7 @@ void cronometrarRbtBuscaId(ifstream* files, ReviewPtr *big_review_list, double* 
     cout << "tempo de execuacao para busca do id: " << id << " registros: " << endl;
     cout << tempo_busca << " segundos" << endl;
     cout << "comparacoes: " << comparacoes_busca << endl;
-    cout << "#----------------------------------------------------------#" << endl << endl;
+    cout << "#------------------------------------------------------------#" << endl << endl;
 
     delete arv;
     delete [] review_list;
@@ -622,7 +652,7 @@ void cronometrarBTreeBuscaId(ifstream* files, ReviewPtr *big_review_list, double
     cout << "tempo de execuacao para busca do id: " << id << " registros: " << endl;
     cout << tempo_busca << " segundos" << endl;
     cout << "comparacoes: " << comparacoes_busca << endl;
-    cout << "#----------------------------------------------------------#" << endl << endl;
+    cout << "#------------------------------------------------------------#" << endl << endl;
 
     delete arv;
     delete [] review_list;
@@ -644,187 +674,31 @@ void selecionar(int selecao, ifstream* files, string path){
             break;
         }
 
-        //ordenacao
-        case 1: {
-            int n = 0;
-            ofstream txt_file;
-            txt_file.open((path + "saida.txt"), ios::out | ios::trunc);
-
-            while (files[2] >> n) {
-                float mediaTempoQS = 0;
-                float mediaTempoHS = 0;
-                float mediaTempoCS = 0;
-
-                float mediaComparacoesQS = 0;
-                float mediaComparacoesHS = 0;
-                float mediaMovimentacoesQS = 0;
-                float mediaMovimentacoesHS = 0;
-                float mediaMovimentacoesCS = 0;
-
-                float mediaMemoriaAlocadaCS = 0;
-
-                cout << "Iniciando processamentos e importacoes: " << endl;
-                for (int i = 0; i < 3; i++) {
-                    cout << "Processamento de " << n << " em " << (i+1)*33.33 << "%" << endl;
-                    float memoriaAlocadaCS_loop = 0;
-
-                    int comparacoesQS_loop = 0;
-                    int comparacoesHS_loop = 0;
-
-                    int movimentacoesQS_loop = 0;
-                    int movimentacoesHS_loop = 0;
-                    int movimentacoesCS_loop = 0;
-
-                    float tempoQS_loop = cronometrarQuickSort(files, big_review_list, reviews, n, &movimentacoesQS_loop,&comparacoesQS_loop);
-                    float tempoHS_loop = cronometrarHeapSort(files, big_review_list, reviews, n, &movimentacoesHS_loop,&comparacoesHS_loop);
-                    float tempoCS_loop = cronometrarCountingSort(files, big_review_list, reviews, n, &movimentacoesCS_loop, &memoriaAlocadaCS_loop);
-
-                    mediaTempoQS += tempoQS_loop / 3;
-                    mediaTempoHS += tempoHS_loop / 3;
-                    mediaTempoCS += tempoCS_loop / 3;
-
-                    mediaComparacoesQS += comparacoesQS_loop / 3;
-                    mediaComparacoesHS += comparacoesHS_loop / 3;
-
-                    mediaMovimentacoesQS += movimentacoesQS_loop / 3;
-                    mediaMovimentacoesHS += movimentacoesHS_loop / 3;
-                    mediaMovimentacoesCS += movimentacoesCS_loop / 3;
-
-                    mediaMemoriaAlocadaCS += memoriaAlocadaCS_loop / 3;
-
-                    txt_file << "#---------------------------------#" << endl;
-                    txt_file << "Resultados para N (espaco amostral " << (i+1) << " ): " << n << endl << endl;
-                    txt_file << "tempo de execucao: " << endl;
-                    txt_file << "QuickSort: " << tempoQS_loop << endl;
-                    txt_file << "HeapSort: " << tempoHS_loop << endl;
-                    txt_file << "CoutingSort: " << tempoCS_loop << endl << endl;
-
-                    txt_file << "Comparacoes: " << endl;
-                    txt_file << "QuickSort: " << comparacoesQS_loop << endl;
-                    txt_file << "HeapSort: " << comparacoesHS_loop << endl << endl;
-
-                    txt_file << "Movimentacoes: " << endl;
-                    txt_file << "QuickSort: " << movimentacoesQS_loop << endl;
-                    txt_file << "HeapSort: " << movimentacoesHS_loop << endl;
-                    txt_file << "CoutingSort: " << movimentacoesCS_loop << endl << endl;
-
-                    txt_file << "memoria alocada pelo CountingSort: " << memoriaAlocadaCS_loop / (1024 * 1024)
-                             << " MB" << endl << endl;
-                    txt_file << "#---------------------------------#" << endl << endl;
-                }
-
-                txt_file << "#---------------------------------#" << endl;
-                txt_file << "Medias para N: " << n << endl << endl;
-                txt_file << "Medias de tempo de execucao: " << endl;
-                txt_file << "QuickSort: " << mediaTempoQS << endl;
-                txt_file << "HeapSort: " << mediaTempoHS << endl;
-                txt_file << "CoutingSort: " << mediaTempoCS << endl << endl;
-
-                txt_file << "Medias de Comparacoes: " << endl;
-                txt_file << "QuickSort: " << mediaComparacoesQS << endl;
-                txt_file << "HeapSort: " << mediaComparacoesHS << endl << endl;
-
-                txt_file << "Medias de Movimentacoes: " << endl;
-                txt_file << "QuickSort: " << mediaMovimentacoesQS << endl;
-                txt_file << "HeapSort: " << mediaMovimentacoesHS << endl;
-                txt_file << "CoutingSort: " << mediaMovimentacoesCS << endl << endl;
-
-                txt_file << "Media de memoria alocada pelo CountingSort: " << mediaMemoriaAlocadaCS / (1024 * 1024)
-                         << " MB" << endl << endl;
-                txt_file << "#---------------------------------#" << endl << endl;
-
-            }
-            cout << "Processamento concluido, dados savlos em " << path << "input.txt" << endl;
-            break;
-        }
-
-            //Hash
-        case 2: {
-            int n = 0;
-            cout << "quantas reviews voce deseja ler?" << endl;
-            cin >> n;
-
-            int m = 0;
-            cout << "Digite quantas versoes do app devem ser impressas:" << endl;
-            cin >> m;
-
-            float tempo = cronometrarHash(files, big_review_list,  n, reviews, m);
-            cout << "Tempo da execução do hash: " << tempo << " seconds" << endl;
-
-            break;
-        }
-
-        //Módulo de teste
-        case 3: {
-            int n = 100;
-            ofstream txt_file;
-            txt_file.open((path + "teste.txt"), ios::out | ios::trunc);
-            int mediaComparacoesQS = 0;
-            int mediaComparacoesHS = 0;
-            int mediaMovimentacoesQS = 0;
-            int mediaMovimentacoesHS = 0;
-            int mediaMovimentacoesCS = 0;
-
-            float mediaMemoriaAlocadaCS = 0;
-
-            cout << "Iniciando processamentos e importacoes: " << endl;
-
-            int mediaTempoQS = cronometrarQuickSortTeste(files, big_review_list, reviews, n, &mediaMovimentacoesQS, &mediaComparacoesQS, txt_file);
-            int mediaTempoHS = cronometrarHeapSortTeste(files, big_review_list, reviews, n, &mediaMovimentacoesHS, &mediaComparacoesHS, txt_file);
-            int mediaTempoCS = cronometrarCountingSortTeste(files, big_review_list, reviews, n, &mediaMovimentacoesCS, &mediaMemoriaAlocadaCS, txt_file);
-
-            txt_file << "#------------  Ordenacao  ------------#" << endl;
-            txt_file << "Medias para N: " << n << endl << endl;
-            txt_file << "tempo de execucao: " << endl;
-            txt_file << "QuickSort: " << mediaTempoQS << endl;
-            txt_file << "HeapSort: " << mediaTempoHS << endl;
-            txt_file << "CoutingSort: " << mediaTempoCS << endl << endl;
-
-            txt_file << "Comparacoes: " << endl;
-            txt_file << "QuickSort: " << mediaComparacoesQS << endl;
-            txt_file << "HeapSort: " << mediaComparacoesHS << endl << endl;
-
-            txt_file << "Movimentacoes: " << endl;
-            txt_file << "QuickSort: " << mediaMovimentacoesQS << endl;
-            txt_file << "HeapSort: " << mediaMovimentacoesHS << endl;
-            txt_file << "CoutingSort: " << mediaMovimentacoesCS << endl << endl;
-
-            txt_file << "memoria alocada pelo CountingSort: " << mediaMemoriaAlocadaCS / (1024 * 1024) << " MB" << endl << endl;
-            txt_file << "#-------------------------------------#\"" << endl << endl;
-
-            txt_file << "#------------  Hash  ------------#" << endl;
-            int mediaTempoHash = cronometrarHashTeste(files, big_review_list, n, reviews, txt_file);
-            txt_file << "Tempo de execucao do hash: " << mediaTempoHash << endl;
-            txt_file << "#-------------------------------------#\"" << endl << endl;
-
-            cout << "Processamento concluido, dados savlos em " << path << "teste.txt" << endl;
-        }
-
-        case 4:{
+        case 1:{
             cronometrarRBT(files, 1000000, big_review_list, enderecos, reviews);
             break;
         }
-        case 5:{
+        case 2:{
             cronometrarRBT_teste(files, big_review_list, enderecos, reviews, path);
             break;
         }
-        case 6:{
-            cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 20);
-            break;
-        }
-        case 7:{
-            cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 200);
-            break;
-        }
-        case 8:{
-            cronometrarBTree_teste(files, big_review_list, enderecos, reviews, path);
-            break;
-        }
-        case 9:{
+        case 3:{
             cronometrarRbtBuscaId(files, big_review_list, enderecos, reviews);
             break;
         }
-        case 10:{
+        case 4:{
+            cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 20);
+            break;
+        }
+        case 5:{
+            cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 200);
+            break;
+        }
+        case 6:{
+            cronometrarBTree_teste(files, big_review_list, enderecos, reviews, path);
+            break;
+        }
+        case 7:{
             cronometrarBTreeBuscaId(files, big_review_list, enderecos, reviews);
             break;
         }
@@ -862,18 +736,14 @@ int main(int argc, char const *argv[]) {
         return 1;
     }
 
-    ifstream read_files[3];
+    ifstream read_files[2];
     read_files[0].open(argv[1] + bin_name, ios::in); //abre o arquivo binario com o conteudo das reviews
     read_files[1].open(argv[1] + index_name, ios::in); //abre o arquivo binario com os indices das reviews
-    read_files[2].open(argv[1] + input_dat_name, ios::in); //abre o txt com as encontrado na pasta dos binarios
     if(read_files[0].is_open() && read_files[1].is_open()) //caso tenha sido encontrado algum binario no diretorio informado
     {
-        if(read_files[2].is_open()){
-            cout << "Arquivos binarios e input.dat econtrados com sucesso!" << endl;
-            mainMenu(read_files, argv[1]); //chama o menu
-        } else{
-            cout << "Erro: arquivo input.dat não encontrado! por favor o insira na pasta: " << argv[1] << endl;
-        }
+        cout << "Arquivos binarios encontrados com sucesso!" << endl;
+        mainMenu(read_files, argv[1]); //chama o menu
+
     }else{ //caso nao tenha sido encontrado nenhum arquivo binario na pasta
         read_files[0].close();
         read_files[1].close();
