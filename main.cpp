@@ -330,6 +330,8 @@ float cronometrarBusca_RBT(ifstream* files, RedBlackTree* arv, ReviewPtr* review
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
 
+    delete [] search_list;
+
     return duration.count() / pow(10, 6);
 }
 
@@ -369,6 +371,7 @@ float cronometrarBusca_BTree(ifstream* files, BTree* arv, ReviewPtr* review_list
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
 
+    delete search_list;
     return duration.count() / pow(10, 6);
 }
 
@@ -380,13 +383,13 @@ void cronometrarRBT(ifstream* files, int n, ReviewPtr *big_review_list, double* 
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
-    RedBlackTree* arv = new RedBlackTree();
 
     double insercao_total = 0;
     double busca_total = 0;
     double comparacoes_insercao_total = 0;
     double comparacoes_busca_total = 0;
     for(int i = 0; i < 3; i++){
+        RedBlackTree* arv = new RedBlackTree();
         double comparacoes_insercao = 0;
         double comparacoes_busca = 0;
         double tempo_insercao = cronometrarInsercaoRBT(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
@@ -400,9 +403,10 @@ void cronometrarRBT(ifstream* files, int n, ReviewPtr *big_review_list, double* 
         cout << "comparacoes: " << comparacoes_busca << endl;
         cout << "#----------------------------------------------------------#" << endl << endl;
         insercao_total += tempo_insercao;
-        busca_total += busca_total;
+        busca_total += tempo_busca;
         comparacoes_insercao_total += comparacoes_insercao;
         comparacoes_busca_total += comparacoes_busca;
+        delete arv;
     }
 
     cout << "#--------------- Arvore Vermelho-Preto Medias---------------------#" << endl;
@@ -414,7 +418,6 @@ void cronometrarRBT(ifstream* files, int n, ReviewPtr *big_review_list, double* 
     cout << "media comparacoes: " << comparacoes_busca_total/3 << endl;
     cout << "#----------------------------------------------------------#" << endl << endl;
 
-    delete arv;
     delete [] review_list;
     delete [] enderecos_list;
 
@@ -438,13 +441,13 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
-    RedBlackTree* arv = new RedBlackTree();
 
     double insercao_total = 0;
     double busca_total = 0;
     double comparacoes_insercao_total = 0;
     double comparacoes_busca_total = 0;
     for(int i = 0; i < 3; i++){
+        RedBlackTree* arv = new RedBlackTree();
         double comparacoes_insercao = 0;
         double comparacoes_busca = 0;
         double tempo_insercao = cronometrarInsercaoRBT(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
@@ -458,10 +461,11 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
         txt_file << "comparacoes: " << comparacoes_busca << endl;
         txt_file << "#------------------------------------------------------------#" << endl << endl;
         insercao_total += tempo_insercao;
-        busca_total += busca_total;
+        busca_total += tempo_busca;
         comparacoes_insercao_total += comparacoes_insercao;
         comparacoes_busca_total += comparacoes_busca;
         cout << "Processando..." << endl;
+        delete arv;
     }
 
     txt_file << "#--------------- Arvore Vermelho-Preto Medias---------------------#" << endl;
@@ -475,7 +479,6 @@ void cronometrarRBT_teste(ifstream* files, ReviewPtr *big_review_list, double* e
 
     cout << "Processo concluido com sucesso! Dados salvos no arquivo saida.txt." << endl;
 
-    delete arv;
     delete [] review_list;
     delete [] enderecos_list;
 
@@ -499,13 +502,13 @@ void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double*
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
-    BTree* arv = new BTree((int)(b+1)/2, b);
 
     double insercao_total = 0;
     double busca_total = 0;
     double comparacoes_insercao_total = 0;
     double comparacoes_busca_total = 0;
     for(int i = 0; i < 3; i++){
+        BTree* arv = new BTree((int)(b+1)/2, b);
         double comparacoes_insercao = 0;
         double comparacoes_busca = 0;
         double tempo_insercao = cronometrarInsercao_BTree(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
@@ -519,10 +522,11 @@ void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double*
         txt_file << "comparacoes: " << comparacoes_busca << endl;
         txt_file << "#-------------------------------------------------------------#" << endl << endl;
         insercao_total += tempo_insercao;
-        busca_total += busca_total;
+        busca_total += tempo_busca;
         comparacoes_insercao_total += comparacoes_insercao;
         comparacoes_busca_total += comparacoes_busca;
         cout << "Processando..." << endl;
+        delete arv;
     }
 
     txt_file << "#--------------- Arvore b [" << b << "] Medias---------------------#" << endl;
@@ -536,7 +540,6 @@ void cronometrarBTree_teste(ifstream* files, ReviewPtr *big_review_list, double*
 
     cout << "Processo concluido com sucesso! Dados salvos no arquivo saida.txt." << endl;
 
-    delete arv;
     delete [] review_list;
     delete [] enderecos_list;
 
@@ -550,13 +553,12 @@ void cronometrarBTree(ifstream* files, int n, ReviewPtr *big_review_list, double
 
     ReviewPtr *review_list = Process::importarReviewsRandomicasBalanceadas(big_review_list, enderecos_list, enderecos, reviews, n);
 
-    BTree* arv = new BTree((int)(b+1)/2, b);
-
     double insercao_total = 0;
     double busca_total = 0;
     double comparacoes_insercao_total = 0;
     double comparacoes_busca_total = 0;
     for(int i = 0; i < 3; i++){
+        BTree* arv = new BTree((int)(b+1)/2, b);
         double comparacoes_insercao = 0;
         double comparacoes_busca = 0;
         double tempo_insercao = cronometrarInsercao_BTree(files, arv, review_list, enderecos, n, reviews, &comparacoes_insercao);
@@ -572,9 +574,10 @@ void cronometrarBTree(ifstream* files, int n, ReviewPtr *big_review_list, double
         cout << "comparacoes: " << comparacoes_busca << endl;
         cout << "#----------------------------------------------------------#" << endl << endl;
         insercao_total += tempo_insercao;
-        busca_total += busca_total;
+        busca_total += tempo_busca;
         comparacoes_insercao_total += comparacoes_insercao;
         comparacoes_busca_total += comparacoes_busca;
+        delete arv;
     }
 
     cout << "#--------------- Arvore B [" << b << "] Medias---------------------#" << endl;
@@ -586,7 +589,6 @@ void cronometrarBTree(ifstream* files, int n, ReviewPtr *big_review_list, double
     cout << "media comparacoes: " << comparacoes_busca_total/3 << endl;
     cout << "#----------------------------------------------------------#" << endl << endl;
 
-    delete arv;
     delete [] review_list;
     delete [] enderecos_list;
 
@@ -618,7 +620,6 @@ void cronometrarRbtBuscaId(ifstream* files, ReviewPtr *big_review_list, double* 
     cout << "comparacoes: " << comparacoes_busca << endl;
     cout << "#------------------------------------------------------------#" << endl << endl;
 
-    delete arv;
     delete [] review_list;
     delete [] enderecos_list;
     delete [] id;

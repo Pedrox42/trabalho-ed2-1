@@ -12,29 +12,27 @@ BTree::BTree(int grau_var, int tamanho_var){
 }
 
 BTree::~BTree(){
-   // raiz = libera(raiz);
+    if(raiz != nullptr){
+        libera(raiz);
+        delete raiz;
+    }
 }
 
-// navegar entre os nos
-//BTreeNode* BTree::libera(BTreeNode* node)
-//{
-//    // navegando pelos nos de i
-//    int i;
-//    if(node != nullptr){
-//        if (!node->folha) {
-//            for (i = node->n-1; i >= 0; i--) {
-//                // se nao e uma folha, percorrer as chaves antes de liberar,
-//                node->chaves[i] = libera(node->chaves[i]);
-//            }
-//        }
-//        cout << "delete node" << endl;
-//        cout << node << endl;
-//
-//        delete node;
-//    }
-//
-//    return nullptr;
-//}
+// navegar na arvore e apaga
+void BTree::libera(BTreeNode* node)
+{
+    // navegando pelos nos de i
+    int i;
+    if(node != nullptr){
+        if (!node->folha) {
+            for (i = 0; i < node->n; i++) {
+                // se nao e uma folha, percorrer as chaves antes de liberar,
+                libera(node->chaves[i]);
+                delete node->chaves[i];
+            }
+        }
+    }
+}
 
 BTreeNode *BTree::getRaiz() {
     return raiz;
@@ -72,17 +70,14 @@ BTreeNode* BTree::buscar(char* id, double* comparacoes){
 
 void BTree::inserir(char *id, double endereco, double* comparacoes) {
 
-    data* valor = new data();
-    valor->idText = id;
-    valor->endereco = endereco;
-
     // caso a raiz seja nula
     if (raiz == nullptr)
     {
         // um novo no sera criado e o valor do id colocado nele
         //esse no sera a raiz e seu tamanho atual (n) sera atualizado
         raiz = new BTreeNode(grau, true, tamanho);
-        raiz->valores[0] = valor;
+        raiz->valores[0].idText = id;
+        raiz->valores[0].endereco = endereco;
         raiz->n = 1;
     }
     else // caso a arvore nao esteja vazia
@@ -102,7 +97,7 @@ void BTree::inserir(char *id, double endereco, double* comparacoes) {
             //a nova raiz possui 2 filhos, splitados da raiz velha
             // two children is going to have new key
             int i = 0;
-            if (BTreeNode::compararId(id, s->valores[0]->idText, comparacoes)){
+            if (BTreeNode::compararId(id, s->valores[0].idText, comparacoes)){
                 i++;
             }
             s->chaves[i]->inserirNaoCompleto(id, endereco, comparacoes);

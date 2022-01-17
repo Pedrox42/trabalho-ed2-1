@@ -8,13 +8,18 @@ BTreeNode::BTreeNode(int grau, bool folha, int tamanho){
     this->folha = folha;
     this->n = 0;
     this->tamanho = tamanho;
-    this->valores = new data*[tamanho];
+    this->valores = new data[tamanho];
     this->chaves = new BTreeNode*[tamanho];
 }
 
 BTreeNode::~BTreeNode() {
-    delete chaves;
-    delete valores;
+
+//    for(int i = 0; i < n; i++){
+//        delete valores[i];
+//    }
+
+    delete [] chaves;
+    delete [] valores;
 }
 
 int BTreeNode::getGrau() {
@@ -77,12 +82,12 @@ BTreeNode *BTreeNode::buscar(char* id, double* comparacoes)
 {
     //achar o primeiro valor maior que o id
     int i = 0;
-    while (i < n && compararId(id, valores[i]->idText, comparacoes)){
+    while (i < n && compararId(id, valores[i].idText, comparacoes)){
         i++;
     }
 
     // verificar se a chave eh igual
-    if (i < n && idIgual(id, valores[i]->idText, comparacoes)){
+    if (i < n && idIgual(id, valores[i].idText, comparacoes)){
         return this;
     }
 
@@ -97,9 +102,6 @@ BTreeNode *BTreeNode::buscar(char* id, double* comparacoes)
 
 void BTreeNode::inserirNaoCompleto(char* id, double endereco, double* comparacoes)
 {
-    data* valor = new data();
-    valor->idText = id;
-    valor->endereco = endereco;
 
     // inicializa como no index mais a direita
     int i = n-1;
@@ -109,20 +111,21 @@ void BTreeNode::inserirNaoCompleto(char* id, double endereco, double* comparacoe
     {
         //encontra a posicao para o novo id e rarranja os ids "maiores"
         (*comparacoes)++;
-        while (i >= 0 && compararId(valores[i]->idText, id, comparacoes))
+        while (i >= 0 && compararId(valores[i].idText, id, comparacoes))
         {
             valores[i+1] = valores[i];
             i--;
         }
 
         //insere o valor na nova localizacao
-        valores[i+1] = valor;
+        valores[i+1].idText = id;
+        valores[i+1].endereco = endereco;
         n++;
     }
     else // se nao e folha
     {
         // encontrando a chave para o valor
-        while (i >= 0 && compararId(valores[i]->idText, id, comparacoes)){
+        while (i >= 0 && compararId(valores[i].idText, id, comparacoes)){
             i--;
         }
 
@@ -135,7 +138,7 @@ void BTreeNode::inserirNaoCompleto(char* id, double endereco, double* comparacoe
             // depois do split, uma das chaves de chaves[i] sobe para o no pai
             // chaves[i] eh separado em 2.
             // busca quais dos 2 recebera o valor
-            if (compararId(id, valores[i+1]->idText, comparacoes)){
+            if (compararId(id, valores[i+1].idText, comparacoes)){
                 i++;
             }
         }
@@ -192,7 +195,7 @@ void BTreeNode::navegar()
         // se nao e uma folha, percorrer as chaves antes de imprimir,
         if (!folha)
             chaves[i]->navegar();
-        cout <<  "id: " << valores[i]->idText << " endereco: " << valores[i]->endereco << endl;
+        cout <<  "id: " << valores[i].idText << " endereco: " << valores[i].endereco << endl;
     }
 
     //  imprimindo os valores do ultimo no

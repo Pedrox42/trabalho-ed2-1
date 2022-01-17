@@ -17,6 +17,8 @@ class BTree
 
         ~BTree();
 
+        void libera(BTreeNode* node);
+
         //BTreeNode* libera(BTreeNode* node);
 
         // funccao para percorrer a aravore

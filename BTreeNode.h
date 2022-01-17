@@ -4,15 +4,19 @@
 
 typedef char* id;
 
- struct data{
-    id idText;
-    double endereco;
+class data{
+    public:
+        char* idText;
+        double endereco;
+        data(){idText = nullptr;};
+        data(char* idText, double endereco){ this->idText = idText; this->endereco = endereco;}
+        ~data(){};
 };
 
 class BTreeNode
 {
 private:
-    data** valores;  // Array contendo os valores
+    data* valores;  // Array contendo os valores
     int grau;      // grau minimino de chaves preenchidas
     BTreeNode **chaves; // array dos ponteiros
     int n;     // numero atual de chaves
