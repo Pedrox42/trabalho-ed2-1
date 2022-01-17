@@ -9,14 +9,10 @@ BTreeNode::BTreeNode(int grau, bool folha, int tamanho){
     this->n = 0;
     this->tamanho = tamanho;
     this->valores = new data[tamanho];
-    this->chaves = new BTreeNode*[tamanho];
+    this->chaves = new BTreeNode*[tamanho+1];//para compensar o valor de chaves
 }
 
 BTreeNode::~BTreeNode() {
-
-//    for(int i = 0; i < n; i++){
-//        delete valores[i];
-//    }
 
     delete [] chaves;
     delete [] valores;
@@ -135,9 +131,6 @@ void BTreeNode::inserirNaoCompleto(char* id, double endereco, double* comparacoe
             // se estiver completo, utilizar o split
             splitFilho(i+1, chaves[i+1]);
 
-            // depois do split, uma das chaves de chaves[i] sobe para o no pai
-            // chaves[i] eh separado em 2.
-            // busca quais dos 2 recebera o valor
             if (compararId(id, valores[i+1].idText, comparacoes)){
                 i++;
             }
