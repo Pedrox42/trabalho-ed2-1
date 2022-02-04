@@ -12,6 +12,7 @@
 #include <ctime>
 #include <cmath>
 #include <chrono>
+#include "HuffmanHeap.h"
 
 //definindo como constantes os nomes dos arquivos que serão usados (tanto o csv quanto os binários)
 const string csv_name = "tiktok_app_reviews.csv";
@@ -676,7 +677,31 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 1:{
-            cronometrarRBT(files, 1000000, big_review_list, enderecos, reviews);
+            HuffmanHeap* heap = new HuffmanHeap(100);
+            char* data  = new char[9];
+            int* freq = new int[9];
+            data[0] = 'A';
+            data [1] = 'C';
+            data[2] = 'E';
+            data[3] = 'D';
+            data[4] = 'T';
+            data[5] = 'O';
+            data[6] = 'B';
+            data[7] = 'F';
+            data[8] = 'G';
+
+            freq[0] = 220;
+            freq[1] = 78;
+            freq[2] = 112;
+            freq[3] = 50;
+            freq[4] = 12;
+            freq[5] = 66;
+            freq[6] = 180;
+            freq[7] = 95;
+            freq[8] = 34;
+
+            heap->CodigosHuffman(data, freq);
+            //cronometrarRBT(files, 1000000, big_review_list, enderecos, reviews);
             break;
         }
         case 2:{
