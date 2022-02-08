@@ -15,9 +15,6 @@ int Process::getBinReviews(ifstream* files){
 ReviewPtr* Process::importarBinario(ifstream* files, int reviews, double* enderecos){
 
     ReviewPtr* big_review_list = new ReviewPtr[reviews];
-//    for (int i = 0; i < (*reviews); i++) {
-//        big_review_list [i] = new Review();
-//    }
     double total = 0;
     for(int i = 0; i < reviews; i++){
         int tamanho_review;
@@ -320,7 +317,7 @@ void Process::acessaRegistro(ifstream* files){
         double peso = (char_total * sizeof(char)) + ((chosen - 1) * Review::getSizeOf(0));
         cout << "peso de leitura: " << endl;
         files[0].seekg(peso, ios::beg);
-        int review_size;
+        int review_size = 0;
         Review *review = Review::desserializar_review(files[0], &review_size);
         review->print();
         files[1].clear();

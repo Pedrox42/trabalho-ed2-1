@@ -677,30 +677,57 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 1:{
-            HuffmanHeap* heap = new HuffmanHeap(100, 9);
-            char* data  = new char[9];
-            int* freq = new int[9];
-            data[0] = 'A';
-            data [1] = 'C';
-            data[2] = 'E';
-            data[3] = 'D';
-            data[4] = 'T';
-            data[5] = 'O';
-            data[6] = 'B';
-            data[7] = 'F';
-            data[8] = 'G';
+            int n = 1000;
+            ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
+            long total_chars = 0;
+            for(int i = 0; i < n; i++){
+                total_chars += review_list[i]->getReviewSize();
+            }
 
-            freq[0] = 220;
-            freq[1] = 78;
-            freq[2] = 112;
-            freq[3] = 50;
-            freq[4] = 12;
-            freq[5] = 66;
-            freq[6] = 180;
-            freq[7] = 95;
-            freq[8] = 34;
+            //127 é o tamanho de table de ascii
+            long* freq = new long[255];
+            for(int i = 0; i < 255; i++){
+                freq[i] = 0;
+            }
 
-            heap->CodigosHuffman(data, freq);
+            char* uncompressed = new char[total_chars];
+            long uncompressed_counter = 0;
+            for(int i = 0; i < n && uncompressed_counter < total_chars; i++){
+                char* review_text = review_list[i]->getReviewText();
+                for(int j = 0; review_text[j] != '\0' && uncompressed_counter < total_chars; j++){
+                    uncompressed[uncompressed_counter] = review_text[j];
+                    uncompressed_counter++;
+                    int char_value = review_text[j] + 127;
+                    freq[char_value]++;
+                }
+            }
+
+
+            int size = 0;
+            for(int i = 0; i < 255; i++){
+                if(freq[i] != 0){
+                    size++;
+                }
+            }
+
+            char* data = new char[size];
+            int* frequency = new int[size];
+
+            int counter = 0;
+            for(int i = 0; i < 255; i++){
+                if(freq[i] != 0){
+                    data[counter] = (i-127);
+                    frequency[counter] = freq[i];
+                    counter++;
+                }
+            }
+
+            for(int i = 0; i < size; i++){
+                cout << "data: " << data[i] << " freq: " << frequency[i] << endl;
+            }
+
+            HuffmanHeap* heap = new HuffmanHeap(size*10, size);
+            heap->CodigosHuffman(data, frequency);
             //cronometrarRBT(files, 1000000, big_review_list, enderecos, reviews);
             break;
         }

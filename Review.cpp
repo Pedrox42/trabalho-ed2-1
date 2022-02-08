@@ -183,6 +183,7 @@ Review* Review::desserializar_review(ifstream& bin_file, int* size){
     Review* review = new Review();
     review->setReviewId(desserializar_char(bin_file));
     review->setReviewText(desserializar_reviewText(bin_file, size));
+    review->setReviewSize(*size);
     review->setUpvotes(desserializar_int(bin_file));
     review->setAppVersion(desserializar_char(bin_file));
     review->setPostedDate(desserializar_char(bin_file));
