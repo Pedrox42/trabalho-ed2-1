@@ -677,7 +677,7 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 1:{
-            HuffmanHeap* heap = new HuffmanHeap(100);
+            HuffmanHeap* heap = new HuffmanHeap(100, 9);
             char* data  = new char[9];
             int* freq = new int[9];
             data[0] = 'A';

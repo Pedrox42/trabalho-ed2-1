@@ -3,8 +3,8 @@
 
 using namespace  std;
 
-HuffmanHeap::HuffmanHeap(long capacidade) {
-    this->size = 0;
+HuffmanHeap::HuffmanHeap(long capacidade, long size) {
+    this->size = size;
     this->capacidade = capacidade;
     this->array = new HuffmanNode*[capacidade];
     raiz = nullptr;
@@ -69,8 +69,8 @@ bool HuffmanHeap::conferirTamanhoUm() {
 HuffmanNode* HuffmanHeap::extrairMenor() {
     HuffmanNode *temp = this->array[0];
     this->array[0] = this->array[this->size - 1];
-
     this->size--;
+
     heapify(0);
 
     return temp;
@@ -149,7 +149,8 @@ void HuffmanHeap::imprimirCodigos(HuffmanNode *node, int* array, int top) {
         imprimirCodigos(node->getRight(), array, top + 1);
     }
     if (node->ehFolha()) {
-        cout << node->getData() << "  | ";
+        cout << node->getData() << " - ";
+        cout << node->getFreq() << " | ";
         this->imprimirArray(array, top);
     }
 }

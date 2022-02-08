@@ -11,7 +11,7 @@ class HuffmanHeap {
         HuffmanNode* raiz;
 
     public:
-        HuffmanHeap(long size);
+        HuffmanHeap(long capacidade, long size);
 
         virtual ~HuffmanHeap();
 
