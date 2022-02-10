@@ -6,9 +6,14 @@
 class HuffmanHeap {
     private:
         long size;
+        long charTypes;
         long capacidade;
         HuffmanNode** array;
         HuffmanNode* raiz;
+        bool** tabela_codigos;
+        int tabela_tamanhos[256];
+        double tamanho_compressao;
+        double tamanho_original;
 
     public:
         HuffmanHeap(long capacidade, long size);
@@ -43,11 +48,29 @@ class HuffmanHeap {
 
         void imprimirArray(int *arr, int n);
 
-        void imprimirCodigos(HuffmanNode *node, int* array, int top);
+        void armazenarCodigos(HuffmanNode *node, int* array, int top);
 
         void CodigosHuffman(char *data, int *freq);
 
-    void swapHuffmanNode(HuffmanNode **a, HuffmanNode **b);
+        void swapHuffmanNode(HuffmanNode **a, HuffmanNode **b);
+
+        void armazenarArray(int *arr, int n, bool *codigo);
+
+        void calcularTamanhos(char *data, long *freq);
+
+        bool* compressaoHuffman(char *data, long *freq, char *uncompressed);
+
+        double getTamannhoCompressao();
+
+        void setTamanhoCompressao(double tamanho_compressao);
+
+        double getTamannhoOrignal();
+
+        void setTamanhoOriginal(double tamanho_original);
+
+        void descompressaoHuffmanAux(HuffmanNode *node, bool *compresseao, int n);
+
+        void descompressaoHuffman(bool *compresseao);
 };
 
 

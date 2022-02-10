@@ -4,10 +4,14 @@
 using namespace  std;
 
 HuffmanHeap::HuffmanHeap(long capacidade, long size) {
+    this->charTypes = size;
     this->size = size;
     this->capacidade = capacidade;
     this->array = new HuffmanNode*[capacidade];
-    raiz = nullptr;
+    this->raiz = nullptr;
+    this->tabela_codigos = new bool*[256];
+    this->tamanho_compressao = 0;
+    this->tamanho_original = 0;
 }
 
 HuffmanHeap::~HuffmanHeap() {
@@ -19,6 +23,23 @@ HuffmanHeap::~HuffmanHeap() {
 
     delete [] array;
 }
+
+double HuffmanHeap::getTamannhoCompressao(){
+    return this->tamanho_compressao;
+}
+
+void HuffmanHeap::setTamanhoCompressao(double tamanho_compressao){
+    this->tamanho_compressao = tamanho_compressao;
+}
+
+double HuffmanHeap::getTamannhoOrignal(){
+    return this->tamanho_original;
+}
+
+void HuffmanHeap::setTamanhoOriginal(double tamanho_original){
+    this->tamanho_original = tamanho_original;
+}
+
 
 long HuffmanHeap::getSize() {
     return size;
@@ -138,26 +159,83 @@ void HuffmanHeap::imprimirArray(int arr[], int n)
     cout << "\n";
 }
 
-void HuffmanHeap::imprimirCodigos(HuffmanNode *node, int* array, int top) {
+void HuffmanHeap::armazenarArray(int arr[], int n, bool* codigo)
+{
+    int i;
+    for (i = 0; i < n; ++i){
+        codigo[i] = arr[i];
+    }
+}
+
+void HuffmanHeap::armazenarCodigos(HuffmanNode *node, int* array, int top) {
     if (node->getLeft()) {
         array[top] = 0;
-        imprimirCodigos(node->getLeft(), array, top + 1);
+        armazenarCodigos(node->getLeft(), array, top + 1);
     }
 
     if (node->getRight()) {
         array[top] = 1;
-        imprimirCodigos(node->getRight(), array, top + 1);
+        armazenarCodigos(node->getRight(), array, top + 1);
     }
     if (node->ehFolha()) {
-        cout << node->getData() << " - ";
-        cout << node->getFreq() << " | ";
-        this->imprimirArray(array, top);
+//        cout << node->getData() << " - ";
+//        cout << node->getFreq() << " | ";
+
+        //transformando para int (range 0-255)
+        int char_value = node->getData() + 128;
+        this->tabela_codigos[char_value] = new bool[top];
+        this->tabela_tamanhos[char_value] = top;
+        this->armazenarArray(array, top, this->tabela_codigos[char_value]);
+    }
+}
+
+void HuffmanHeap::calcularTamanhos(char* data, long* freq){
+    this->tamanho_compressao = 0;
+    this->tamanho_original = 0;
+    for(int i = 0; i < this->charTypes; i++){
+        int char_value = data[i] + 128;
+        this->tamanho_compressao += (this->tabela_tamanhos[char_value] * freq[i]);
+        this->tamanho_original += freq[i];
+    }
+}
+
+bool* HuffmanHeap::compressaoHuffman(char* data, long* freq, char* uncompressed){
+    this->calcularTamanhos(data, freq);
+    bool* array_compressao = new bool[(int)this->tamanho_compressao];
+    int counter = 0;
+
+    for(int i = 0; i < this->tamanho_original; i++){
+        int char_value = uncompressed[i] + 128;
+        for(int j = 0; j < this->tabela_tamanhos[char_value]; j++){
+            array_compressao[counter] = this->tabela_codigos[char_value][j];
+            counter++;
+        }
+    }
+
+    return array_compressao;
+}
+
+void HuffmanHeap::descompressaoHuffman(bool *compresseao) {
+    this->descompressaoHuffmanAux(raiz, compresseao, 0);
+}
+
+void HuffmanHeap::descompressaoHuffmanAux(HuffmanNode *node, bool* compresseao, int n){
+    if(n < this->tamanho_compressao){
+        if(node->ehFolha()){
+            cout << node->getData();
+            node = raiz;
+        }
+        if (compresseao[n]) {
+            descompressaoHuffmanAux(node->getRight(), compresseao, n+1);
+        } else{
+            descompressaoHuffmanAux(node->getLeft(), compresseao, n+1);
+        }
     }
 }
 
 void HuffmanHeap::CodigosHuffman(char* data, int* freq) {
     comprimir(data, freq);
     int array[capacidade], top = 0;
-    imprimirCodigos(raiz, array, top);
+    armazenarCodigos(raiz, array, top);
 }
 

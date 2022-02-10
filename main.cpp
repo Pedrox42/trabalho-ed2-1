@@ -213,7 +213,7 @@ float cronometrarCountingSortTeste(ifstream* files, ReviewPtr* big_review_list, 
 
     auto start = high_resolution_clock::now();
 
-//    chamando função de quicksort
+    //chamando função de quicksort
     *memoria_alocada = 0;
 
     Sorts::countingSort(review_list, n, max, movimentacoes, memoria_alocada);
@@ -250,7 +250,6 @@ float cronometrarHash(ifstream* files, ReviewPtr* big_review_list, int n, int re
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-//    cout << "Versoes mais frequentes do app:"<< endl;
     hashList->imprimeMaisFrequentes(m);
 
     delete[] review_list;
@@ -677,7 +676,7 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 1:{
-            int n = 1000;
+            int n = 1000000;
             ReviewPtr *review_list =  cronometrarReviewList(files, n, big_review_list, reviews);
             long total_chars = 0;
             for(int i = 0; i < n; i++){
@@ -685,8 +684,8 @@ void selecionar(int selecao, ifstream* files, string path){
             }
 
             //127 é o tamanho de table de ascii
-            long* freq = new long[255];
-            for(int i = 0; i < 255; i++){
+            long* freq = new long[256];
+            for(int i = 0; i < 256; i++){
                 freq[i] = 0;
             }
 
@@ -697,14 +696,14 @@ void selecionar(int selecao, ifstream* files, string path){
                 for(int j = 0; review_text[j] != '\0' && uncompressed_counter < total_chars; j++){
                     uncompressed[uncompressed_counter] = review_text[j];
                     uncompressed_counter++;
-                    int char_value = review_text[j] + 127;
-                    freq[char_value]++;
+                    int char_value = review_text[j] + 128;
+                    freq[char_value] += 1;
                 }
             }
 
 
             int size = 0;
-            for(int i = 0; i < 255; i++){
+            for(int i = 0; i < 256; i++){
                 if(freq[i] != 0){
                     size++;
                 }
@@ -714,20 +713,27 @@ void selecionar(int selecao, ifstream* files, string path){
             int* frequency = new int[size];
 
             int counter = 0;
-            for(int i = 0; i < 255; i++){
+            for(int i = 0; i < 256; i++){
                 if(freq[i] != 0){
-                    data[counter] = (i-127);
+                    data[counter] = (i-128);
                     frequency[counter] = freq[i];
                     counter++;
                 }
             }
 
-            for(int i = 0; i < size; i++){
-                cout << "data: " << data[i] << " freq: " << frequency[i] << endl;
-            }
-
             HuffmanHeap* heap = new HuffmanHeap(size*10, size);
             heap->CodigosHuffman(data, frequency);
+            bool* compressao = heap->compressaoHuffman(data, freq, uncompressed);
+
+            heap->descompressaoHuffman(compressao);
+
+            delete heap;
+            delete [] data;
+            delete [] freq;
+            delete [] frequency;
+            delete [] uncompressed;
+            delete [] review_list;
+
             //cronometrarRBT(files, 1000000, big_review_list, enderecos, reviews);
             break;
         }
@@ -814,7 +820,6 @@ int main(int argc, char const *argv[]) {
             ofstream write_files[2]; //vetor que armazenará arquivo que possui indices das reviews e arquivo que possui todo o conteúdo das reviews
             write_files[0].open(argv[1] + bin_name,  ios::binary | ios::trunc); //cria arquivo binário que possuirá o conteudo das reviews
             write_files[1].open(argv[1] + index_name, ios::binary | ios::trunc); //cria arquivo binário que possuirá os indices das reviews
-
             Process::processar(read_files[0], write_files); //chama funcao processar para converter o conteudo do csv para binario
 
             write_files[0].close(); //fecha arquivos
