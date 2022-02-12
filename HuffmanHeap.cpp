@@ -121,7 +121,7 @@ void HuffmanHeap::organizar() {
 }
 
 
- void HuffmanHeap::ciarArrayEORganizar(char* data, int* freq) {
+ void HuffmanHeap::ciarArrayEORganizar(char* data, long* freq) {
     for (int i = 0; i < this->size; ++i){
         this->array[i] = new HuffmanNode(data[i], freq[i]);
     }
@@ -130,7 +130,7 @@ void HuffmanHeap::organizar() {
 }
 
 
-void HuffmanHeap::comprimir(char* data, int* freq) {
+void HuffmanHeap::comprimir(char* data, long* freq) {
     HuffmanNode *left, *right, *top;
     ciarArrayEORganizar(data, freq);
 
@@ -178,8 +178,6 @@ void HuffmanHeap::armazenarCodigos(HuffmanNode *node, int* array, int top) {
         armazenarCodigos(node->getRight(), array, top + 1);
     }
     if (node->ehFolha()) {
-//        cout << node->getData() << " - ";
-//        cout << node->getFreq() << " | ";
 
         //transformando para int (range 0-255)
         int char_value = node->getData() + 128;
@@ -216,15 +214,20 @@ bool* HuffmanHeap::compressaoHuffman(char* data, long* freq, char* uncompressed)
 }
 
 void HuffmanHeap::descompressaoHuffman(bool *compresseao) {
-    this->descompressaoHuffmanAux(raiz, compresseao, 0);
+    this->descompressaoHuffmanAux(this->raiz, compresseao, 0);
 }
 
-void HuffmanHeap::descompressaoHuffmanAux(HuffmanNode *node, bool* compresseao, int n){
-    if(n < this->tamanho_compressao){
+void HuffmanHeap::descompressaoHuffmanAux(HuffmanNode *node, bool* compresseao, long n){
+    if(n < this->tamanho_compressao && node != nullptr){
+        cout << "antes do if" << endl;
         if(node->ehFolha()){
-            cout << node->getData();
-            node = raiz;
+           // cout << node->getData();
+            node = this->raiz;
         }
+
+        cout << "n: " << n << endl;
+        cout << "antes do if2" << endl;
+
         if (compresseao[n]) {
             descompressaoHuffmanAux(node->getRight(), compresseao, n+1);
         } else{
@@ -233,9 +236,9 @@ void HuffmanHeap::descompressaoHuffmanAux(HuffmanNode *node, bool* compresseao, 
     }
 }
 
-void HuffmanHeap::CodigosHuffman(char* data, int* freq) {
+void HuffmanHeap::CodigosHuffman(char* data, long* freq) {
     comprimir(data, freq);
     int array[capacidade], top = 0;
-    armazenarCodigos(raiz, array, top);
+    armazenarCodigos(this->raiz, array, top);
 }
 

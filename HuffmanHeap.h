@@ -42,15 +42,15 @@ class HuffmanHeap {
 
         void organizar();
 
-        void ciarArrayEORganizar(char *data, int *freq);
+        void ciarArrayEORganizar(char *data, long *freq);
 
-        void comprimir(char *data, int *freq);
+        void comprimir(char *data, long *freq);
 
         void imprimirArray(int *arr, int n);
 
         void armazenarCodigos(HuffmanNode *node, int* array, int top);
 
-        void CodigosHuffman(char *data, int *freq);
+        void CodigosHuffman(char *data, long *freq);
 
         void swapHuffmanNode(HuffmanNode **a, HuffmanNode **b);
 
@@ -68,7 +68,7 @@ class HuffmanHeap {
 
         void setTamanhoOriginal(double tamanho_original);
 
-        void descompressaoHuffmanAux(HuffmanNode *node, bool *compresseao, int n);
+        void descompressaoHuffmanAux(HuffmanNode *node, bool *compresseao, long n);
 
         void descompressaoHuffman(bool *compresseao);
 };
