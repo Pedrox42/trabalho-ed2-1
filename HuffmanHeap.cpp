@@ -187,18 +187,17 @@ void HuffmanHeap::armazenarCodigos(HuffmanNode *node, int* array, int top) {
     }
 }
 
-void HuffmanHeap::calcularTamanhos(char* data, long* freq){
+void HuffmanHeap::calcularTamanhos(char* data, long* freq, long total){
     this->tamanho_compressao = 0;
-    this->tamanho_original = 0;
+    this->tamanho_original = total;
     for(int i = 0; i < this->charTypes; i++){
         int char_value = data[i] + 128;
         this->tamanho_compressao += (this->tabela_tamanhos[char_value] * freq[i]);
-        this->tamanho_original += freq[i];
     }
 }
 
-bool* HuffmanHeap::compressaoHuffman(char* data, long* freq, char* uncompressed){
-    this->calcularTamanhos(data, freq);
+bool* HuffmanHeap::compressaoHuffman(char* data, long* freq, char* uncompressed, long total){
+    this->calcularTamanhos(data, freq, total);
     bool* array_compressao = new bool[(int)this->tamanho_compressao];
     int counter = 0;
 
@@ -213,27 +212,33 @@ bool* HuffmanHeap::compressaoHuffman(char* data, long* freq, char* uncompressed)
     return array_compressao;
 }
 
-void HuffmanHeap::descompressaoHuffman(bool *compresseao) {
-    this->descompressaoHuffmanAux(this->raiz, compresseao, 0);
-}
+char* HuffmanHeap::descompressaoHuffman(bool *compressao) {
+    char* traducao = new char[((int) tamanho_original) + 1];
+    int contador = 0;
+    HuffmanNode* node = this->raiz;
+    cout << "tamanho original: " << this->tamanho_original << endl;
 
-void HuffmanHeap::descompressaoHuffmanAux(HuffmanNode *node, bool* compresseao, long n){
-    if(n < this->tamanho_compressao && node != nullptr){
-        cout << "antes do if" << endl;
-        if(node->ehFolha()){
+    for (int i=0; i < ((int)this->tamanho_compressao); i++)
+    {
+        // no folha
+        if (node->ehFolha())
+        {
            // cout << node->getData();
+            traducao[contador] = node->getData();
+            contador++;
             node = this->raiz;
         }
 
-        cout << "n: " << n << endl;
-        cout << "antes do if2" << endl;
-
-        if (compresseao[n]) {
-            descompressaoHuffmanAux(node->getRight(), compresseao, n+1);
-        } else{
-            descompressaoHuffmanAux(node->getLeft(), compresseao, n+1);
+        if (compressao[i]){
+            node = node->getRight();
+        }
+        else{
+            node = node->getLeft();
         }
     }
+    traducao[((int) tamanho_original)] = '\0';
+
+    return traducao;
 }
 
 void HuffmanHeap::CodigosHuffman(char* data, long* freq) {

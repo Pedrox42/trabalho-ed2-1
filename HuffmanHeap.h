@@ -56,9 +56,9 @@ class HuffmanHeap {
 
         void armazenarArray(int *arr, int n, bool *codigo);
 
-        void calcularTamanhos(char *data, long *freq);
+        void calcularTamanhos(char *data, long *freq, long total);
 
-        bool* compressaoHuffman(char *data, long *freq, char *uncompressed);
+        bool* compressaoHuffman(char *data, long *freq, char *uncompressed, long total);
 
         double getTamannhoCompressao();
 
@@ -68,9 +68,7 @@ class HuffmanHeap {
 
         void setTamanhoOriginal(double tamanho_original);
 
-        void descompressaoHuffmanAux(HuffmanNode *node, bool *compresseao, long n);
-
-        void descompressaoHuffman(bool *compresseao);
+        char* descompressaoHuffman(bool *compressao);
 };
 
 

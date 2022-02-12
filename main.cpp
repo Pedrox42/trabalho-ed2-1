@@ -120,16 +120,11 @@ void configurarHuffman(ReviewPtr* review_list, int n){
         }
     }
 
-    cout << "teste" << endl;
     HuffmanHeap* heap = new HuffmanHeap(size*10, size);
     heap->CodigosHuffman(data, frequencias_relevantes);
-    bool* compressao = heap->compressaoHuffman(data, todas_frequencias, original);
-    char* traducao = new char[total_chars];
-
-    heap->descompressaoHuffman(compressao);
-
-   // cout << "teste" << endl;
-   // cout << traducao << endl;
+    bool* compressao = heap->compressaoHuffman(data, frequencias_relevantes, original, total_chars);
+    char* traducao = heap->descompressaoHuffman(compressao);
+    cout << traducao << endl;
 
     delete heap;
     delete [] traducao;
@@ -154,35 +149,13 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 1:{
-            int n = 1000000;
+            int n = 100000;
             ReviewPtr *review_list =  Cronometrar::reviewList(files, n, big_review_list, reviews);
 
             configurarHuffman(review_list, n);
 
-//            long total_chars = 0;
-//            for(int i = 0; i < n; i++){
-//                total_chars += review_list[i]->getReviewSize();
-//            }
-            //127 é o tamanho de table de ascii;
-//            for(int i = 0; i < 256; i++){
-//                freq[i] = 0;
-//            }
-//
-//            char* uncompressed = new char[total_chars];
-//            long uncompressed_counter = 0;
-//            for(int i = 0; i < n && uncompressed_counter < total_chars; i++){
-//                char* review_text = review_list[i]->getReviewText();
-//                for(int j = 0; review_text[j] != '\0' && uncompressed_counter < total_chars; j++){
-//                    uncompressed[uncompressed_counter] = review_text[j];
-//                    uncompressed_counter++;
-//                    int char_value = review_text[j] + 128;
-//                    freq[char_value] += 1;
-//                }
-//            }
-
             delete [] review_list;
 
-            //cronometrarRBT(files, 1000000, big_review_list, enderecos, reviews);
             break;
         }
         case 2:{
