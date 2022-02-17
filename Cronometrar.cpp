@@ -14,7 +14,6 @@ ReviewPtr* Cronometrar::reviewList(ifstream* files, int n, ReviewPtr *big_review
     //cronometrando o tempo de execucao
     auto stop = high_resolution_clock::now();
     auto duration = duration_cast<microseconds>(stop - start);
-    //cout << "Tempo da importacao: " << duration.count() / pow(10, 6) << " seconds" << endl;
     return review_list;
 }
 

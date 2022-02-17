@@ -20,6 +20,10 @@ const string csv_name = "tiktok_app_reviews.csv";
 const string bin_name = "tiktok_app_reviews.bin";
 const string index_name = "index.bin";
 const string input_dat_name = "input.txt";
+const string reviewsComp_name = "reviewsComp.bin";
+const string reviewsOrig_name = "reviewsOrig.bin";
+const string heap_name = "heap.bin";
+
 typedef Review* ReviewPtr;
 
 
@@ -73,7 +77,7 @@ int menu(){
     return selecao == 0 ? 0 : selecao+compensar;
 }
 
-void configurarHuffman(ReviewPtr* review_list, int n){
+HuffmanHeap* configurarHuffman(ReviewPtr* review_list, int n, string path){
     long* todas_frequencias = new long[256];
     long* frequencias_relevantes;
     char* data;
@@ -124,14 +128,26 @@ void configurarHuffman(ReviewPtr* review_list, int n){
     heap->CodigosHuffman(data, frequencias_relevantes);
     bool* compressao = heap->compressaoHuffman(data, frequencias_relevantes, original, total_chars);
     char* traducao = heap->descompressaoHuffman(compressao);
-    cout << traducao << endl;
 
-    delete heap;
+    //0 -> binario para huffman Heap
+    //1 -> binario para texto comprimido
+    ofstream reviewComp_file;
+
+
+    //salvando o arquivo comprimido em binario
+    reviewComp_file.open(path + reviewsComp_name,  ios::binary | ios::trunc);
+    reviewComp_file.write((char*)&compressao, sizeof(compressao));
+    reviewComp_file.close();
+
+
     delete [] traducao;
+//    delete [] compressao;
     delete [] data;
     delete [] todas_frequencias;
     delete [] frequencias_relevantes;
     delete [] original;
+
+    return heap;
 }
 
 
@@ -152,14 +168,109 @@ void selecionar(int selecao, ifstream* files, string path){
             int n = 100000;
             ReviewPtr *review_list =  Cronometrar::reviewList(files, n, big_review_list, reviews);
 
-            configurarHuffman(review_list, n);
+            auto start = high_resolution_clock::now();
+
+            HuffmanHeap* heap = configurarHuffman(review_list, n, path);
+
+            auto stop = high_resolution_clock::now();
+            auto duration = duration_cast<microseconds>(stop - start);
+
+            cout << "tempo para criacao da Huffman Tree: " << duration.count() / pow(10, 6) <<  " segundos" << endl;
+
+            cout << "-------------------" << endl;
+            cout << "       Reviews comprimidas com sucesso!" << endl;
+            cout << "-------------------" << endl;
+            cout << "[1] Descomprimir" << endl;
+            cout << "[0] Sair" << endl;
+
+            //chmando função de heapSort
+
+            //cronometrando o tempo de execucao
+
+            int input;
+            cin >> input;
+            if(input){
+
+                ifstream reviewComp_file;
+                ofstream reviewOrig_file;
+
+                bool* comprimido = new bool[(int) heap->getTamannhoCompressao()];
+
+                reviewComp_file.open(path + reviewsComp_name, ios::binary);
+                reviewComp_file.read((char*)&comprimido, sizeof(comprimido));
+                reviewComp_file.close();
+
+                start = high_resolution_clock::now();
+
+                char* traducao = heap->descompressaoHuffman(comprimido);
+
+                stop = high_resolution_clock::now();
+                duration = duration_cast<microseconds>(stop - start);
+
+                cout << "tempo para descompressao: " << duration.count() / pow(10, 6) << " segundos" << endl;
+
+                reviewOrig_file.open(path + reviewsOrig_name, ios::binary | ios::trunc);
+                reviewOrig_file.write((char*)&traducao, sizeof(char) * ((int)heap->getTamannhoOrignal()+1) );
+                reviewOrig_file.close();
+
+                char* teste = new char[(int)heap->getTamannhoOrignal() + 1];
+
+                reviewComp_file.open(path + reviewsOrig_name, ios::binary);
+                reviewComp_file.read((char*)&teste, sizeof(teste));
+                reviewComp_file.close();
+
+                delete [] teste;
+                delete [] comprimido;
+            } else{
+                exit(1);
+            }
 
             delete [] review_list;
+            delete heap;
 
             break;
         }
         case 2:{
-            //cronometrarRBT_teste(files, big_review_list, enderecos, reviews, path);
+
+            //setando streams
+            ofstream reviewOrig_file;
+
+            //0 -> binario da heap
+            //1 -> binario do texto comprimido
+            ifstream read_files[2];
+
+            HuffmanHeap* heap;
+
+            //lendo heap do binario
+            read_files[0].open(path + heap_name, ios::binary);
+            read_files[0].read((char*)&heap, sizeof(heap));
+            read_files[0].close();
+
+            cout << "teste" << endl;
+
+            bool* comprimido = new bool[(int) heap->getTamannhoCompressao()];
+
+            cout << "teste2" << endl;
+
+            read_files[0].open(path + reviewsComp_name, ios::binary);
+            read_files[0].read((char*)&comprimido, sizeof(comprimido));
+            read_files[0].close();
+
+            cout << "teste3" << endl;
+
+            char* original = heap->descompressaoHuffman(comprimido);
+
+            cout << "teste4" << endl;
+
+            cout << original << endl;
+
+            //salvando a heap no arquivo binario
+//            write_files[0].open(path + heap_name,  ios::binary | ios::trunc);
+//            write_files[0].write((char*)&heap, sizeof(heap));
+//            write_files[0].close();
+
+            delete heap;
+            delete [] comprimido;
             break;
         }
         case 3:{

@@ -216,7 +216,6 @@ char* HuffmanHeap::descompressaoHuffman(bool *compressao) {
     char* traducao = new char[((int) tamanho_original) + 1];
     int contador = 0;
     HuffmanNode* node = this->raiz;
-    cout << "tamanho original: " << this->tamanho_original << endl;
 
     for (int i=0; i < ((int)this->tamanho_compressao); i++)
     {
