@@ -36,48 +36,17 @@ int menu(){
     cout << "-------------------" << endl;
     cout << "       MENU" << endl;
     cout << "-------------------" << endl;
-    cout << "[1] Arvore Vermelho-Preto" << endl;
-    cout << "[2] Arvore B" << endl;
+    cout << "[1] Comprimir Reviews" << endl;
+    cout << "[2] Sequencia de compressoes - (10.000, 100.000, 1.000.000) " << endl;
+    cout << "[3] Analise" << endl;
     cout << "[0] Sair" << endl;
 
     cin >> selecao;
 
-    int compensar=0;
-
-    switch (selecao) {
-        case 0: {
-            return selecao;
-        }
-        case 1: {
-            cout << "-------------------" << endl;
-            cout << "       MENU" << endl;
-            cout << "-------------------" << endl;
-            cout << "[1] Arvore Vermelho-Preto" << endl;
-            cout << "[2] Arvore Vermelho-Preto analises" << endl;
-            cout << "[3] Arvore Vermelho-Preto busca por id" << endl;
-            cout << "[0] Sair" << endl;
-            break;
-        }
-        case 2: {
-            cout << "-------------------" << endl;
-            cout << "       MENU" << endl;
-            cout << "-------------------" << endl;
-            cout << "[1] Arvore B [20]" << endl;
-            cout << "[2] Arvore B [200]" << endl;
-            cout << "[3] Arvore B analises" << endl;
-            cout << "[4] Arvore B busca por id" << endl;
-            cout << "[0] Sair" << endl;
-            compensar=3;
-            break;
-        }
-
-    }
-    cin >> selecao;
-
-    return selecao == 0 ? 0 : selecao+compensar;
+    return selecao;
 }
 
-HuffmanHeap* configurarHuffman(ReviewPtr* review_list, int n, string path){
+HuffmanHeap* configurarHuffman(ReviewPtr* review_list, int n, string path, int* comparacoes){
     long* todas_frequencias = new long[256];
     long* frequencias_relevantes;
     char* data;
@@ -125,9 +94,10 @@ HuffmanHeap* configurarHuffman(ReviewPtr* review_list, int n, string path){
     }
 
     HuffmanHeap* heap = new HuffmanHeap(size*10, size);
-    heap->CodigosHuffman(data, frequencias_relevantes);
+
+    heap->CodigosHuffman(data, frequencias_relevantes, comparacoes);
+
     bool* compressao = heap->compressaoHuffman(data, frequencias_relevantes, original, total_chars);
-    char* traducao = heap->descompressaoHuffman(compressao);
 
     //0 -> binario para huffman Heap
     //1 -> binario para texto comprimido
@@ -140,8 +110,6 @@ HuffmanHeap* configurarHuffman(ReviewPtr* review_list, int n, string path){
     reviewComp_file.close();
 
 
-    delete [] traducao;
-//    delete [] compressao;
     delete [] data;
     delete [] todas_frequencias;
     delete [] frequencias_relevantes;
@@ -149,6 +117,205 @@ HuffmanHeap* configurarHuffman(ReviewPtr* review_list, int n, string path){
 
     return heap;
 }
+
+void sequenciaHuffman(ReviewPtr* review_list, int n, string path){
+    long* todas_frequencias = new long[256];
+    long* frequencias_relevantes;
+    char* data;
+    char* original;
+    int size;
+    long total_chars = 0;
+    int comparacoes = 0;
+
+    for(int i = 0; i < n; i++){
+        total_chars += review_list[i]->getReviewSize();
+    }
+
+    for(int i = 0; i < 256; i++){
+        todas_frequencias[i] = 0;
+    }
+
+    original = new char[total_chars];
+    long original_counter = 0;
+    for(int i = 0; i < n && original_counter < total_chars; i++){
+        char* review_text = review_list[i]->getReviewText();
+        for(int j = 0; review_text[j] != '\0' && original_counter < total_chars; j++){
+            original[original_counter] = review_text[j];
+            original_counter++;
+            int char_value = review_text[j] + 128;
+            todas_frequencias[char_value] += 1;
+        }
+    }
+
+    size = 0;
+    for(int i = 0; i < 256; i++){
+        if(todas_frequencias[i] != 0){
+            (size)++;
+        }
+    }
+
+    data = new char[size];
+    frequencias_relevantes = new long[size];
+
+    int counter = 0;
+    for(int i = 0; i < 256; i++){
+        if(todas_frequencias[i] != 0){
+            data[counter] = (i-128);
+            frequencias_relevantes[counter] = todas_frequencias[i];
+            counter++;
+        }
+    }
+
+    HuffmanHeap* heap = new HuffmanHeap(size*10, size);
+
+
+    auto start = high_resolution_clock::now();
+
+    heap->CodigosHuffman(data, frequencias_relevantes, &comparacoes);
+    bool* compressao = heap->compressaoHuffman(data, frequencias_relevantes, original, total_chars);
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    double memoriaOriginal = heap->getTamannhoOrignal()*8; //8 bits de um char
+
+
+    cout << "---------------------- " << n << " Reviews ---------------------------" << endl << endl;
+    cout << "Utilizando " << n << " reviews texts concatenados:" << endl;
+    cout << "Tempo para criacao da Huffman Tree: " << duration.count() / pow(10, 6) <<  " segundos" << endl;
+    cout << "Comparacoes: " << comparacoes << endl;
+    cout << "Memoria utilizada originalmente: " << memoriaOriginal << endl;
+    cout << "Memoria utilizada apos a compressao: " << heap->getTamannhoCompressao() << endl;
+    cout << "Taxa de compressao: " <<
+         (heap->getTamannhoOrignal() != 0 ?
+          (heap->getTamannhoCompressao()/memoriaOriginal)*100 : 0)
+         << "%" << endl;
+
+    start = high_resolution_clock::now();
+
+    char* traducao = heap->descompressaoHuffman(compressao);
+
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+
+    cout << "tempo para descompressao: " << duration.count() / pow(10, 6) << " segundos" << endl << endl;
+    cout << "---------------------------------------------------------" << endl << endl;
+
+    delete [] data;
+    delete [] todas_frequencias;
+    delete [] frequencias_relevantes;
+    delete [] original;
+    delete heap;
+
+}
+
+
+double* analiseHuffman(ReviewPtr* review_list, int n, string path, ofstream& txt_file){
+    long* todas_frequencias = new long[256];
+    long* frequencias_relevantes;
+    char* data;
+    char* original;
+    int size;
+    long total_chars = 0;
+    int comparacoes = 0;
+
+
+    for(int i = 0; i < n; i++){
+        total_chars += review_list[i]->getReviewSize();
+    }
+
+    for(int i = 0; i < 256; i++){
+        todas_frequencias[i] = 0;
+    }
+
+    original = new char[total_chars];
+    long original_counter = 0;
+    for(int i = 0; i < n && original_counter < total_chars; i++){
+        char* review_text = review_list[i]->getReviewText();
+        for(int j = 0; review_text[j] != '\0' && original_counter < total_chars; j++){
+            original[original_counter] = review_text[j];
+            original_counter++;
+            int char_value = review_text[j] + 128;
+            todas_frequencias[char_value] += 1;
+        }
+    }
+
+    size = 0;
+    for(int i = 0; i < 256; i++){
+        if(todas_frequencias[i] != 0){
+            (size)++;
+        }
+    }
+
+    data = new char[size];
+    frequencias_relevantes = new long[size];
+
+    int counter = 0;
+    for(int i = 0; i < 256; i++){
+        if(todas_frequencias[i] != 0){
+            data[counter] = (i-128);
+            frequencias_relevantes[counter] = todas_frequencias[i];
+            counter++;
+        }
+    }
+
+    HuffmanHeap* heap = new HuffmanHeap(size*10, size);
+
+    auto start = high_resolution_clock::now();
+
+    heap->CodigosHuffman(data, frequencias_relevantes, &comparacoes);
+    bool* compressao = heap->compressaoHuffman(data, frequencias_relevantes, original, total_chars);
+
+    auto stop = high_resolution_clock::now();
+    auto duration = duration_cast<microseconds>(stop - start);
+
+    double memoriaOriginal = heap->getTamannhoOrignal()*8; //8 bits de um char
+
+    double tempo_execucao_compressao = duration.count() / pow(10, 6);
+
+    double taxaCompressao = (heap->getTamannhoOrignal() != 0 ? (heap->getTamannhoCompressao()/memoriaOriginal)*100 : 0);
+
+
+    txt_file << "---------------------- " << n << " Reviews ---------------------------" << endl << endl;
+    txt_file << "Utilizando " << n << " reviews texts concatenados:" << endl;
+    txt_file << "Tempo para criacao da Huffman Tree: " << tempo_execucao_compressao <<  " segundos" << endl;
+    txt_file << "Comparacoes: " << comparacoes << endl;
+    txt_file << "Memoria utilizada originalmente: " << memoriaOriginal << endl;
+    txt_file << "Memoria utilizada apos a compressao: " << heap->getTamannhoCompressao() << endl;
+    txt_file << "Taxa de compressao: " << taxaCompressao << "%" << endl;
+
+    start = high_resolution_clock::now();
+
+    char* traducao = heap->descompressaoHuffman(compressao);
+
+    stop = high_resolution_clock::now();
+    duration = duration_cast<microseconds>(stop - start);
+
+    double tempo_execucao_descompressao = duration.count() / pow(10, 6);
+
+    txt_file << "tempo para descompressao: " << tempo_execucao_descompressao << " segundos" << endl << endl;
+    txt_file << "---------------------------------------------------------" << endl << endl;
+
+
+    //0 -> comparacoes
+    //1 -> tempo de execucao p/ compressao
+    //2 -> tempo de execucao p/ descompressao
+    //3 -> taxa de compressao
+    double* valores = new double[4];
+    valores[0] = (double) comparacoes;
+    valores[1] = tempo_execucao_compressao;
+    valores[2] = tempo_execucao_descompressao;
+    valores[3] = taxaCompressao;
+
+    delete [] data;
+    delete [] todas_frequencias;
+    delete [] frequencias_relevantes;
+    delete [] original;
+    delete heap;
+
+    return valores;
+}
+
 
 
 void selecionar(int selecao, ifstream* files, string path){
@@ -165,23 +332,43 @@ void selecionar(int selecao, ifstream* files, string path){
         }
 
         case 1:{
-            int n = 100000;
+
+            int n;
+            cout << "Quantas reviews voce deseja concatenar?" << endl;
+            cin >> n;
+
             ReviewPtr *review_list =  Cronometrar::reviewList(files, n, big_review_list, reviews);
 
             auto start = high_resolution_clock::now();
 
-            HuffmanHeap* heap = configurarHuffman(review_list, n, path);
+            int comparacoes = 0;
+
+            HuffmanHeap* heap = configurarHuffman(review_list, n, path, &comparacoes);
 
             auto stop = high_resolution_clock::now();
             auto duration = duration_cast<microseconds>(stop - start);
 
-            cout << "tempo para criacao da Huffman Tree: " << duration.count() / pow(10, 6) <<  " segundos" << endl;
+            double memoriaOriginal = heap->getTamannhoOrignal()*8; //8 bits de um char
 
-            cout << "-------------------" << endl;
+            cout << "---------------------- " << n << " Reviews ---------------------------" << endl << endl;
+            cout << "Utilizando " << n << " reviews texts concatenados:" << endl;
+            cout << "Tempo para criacao da Huffman Tree: " << duration.count() / pow(10, 6) <<  " segundos" << endl;
+            cout << "Comparacoes: " << comparacoes << endl;
+            cout << "Memoria utilizada originalmente: " << memoriaOriginal << endl;
+            cout << "Memoria utilizada apos a compressao: " << heap->getTamannhoCompressao() << endl;
+            cout << "Taxa de compressao: " <<
+            (heap->getTamannhoOrignal() != 0 ?
+            (heap->getTamannhoCompressao()/memoriaOriginal)*100 : 0)
+            << "%" << endl << endl;
+            cout << "------------------------------------------------------------" << endl << endl;
+
+
+            cout << "-------------------------------------------------" << endl;
             cout << "       Reviews comprimidas com sucesso!" << endl;
-            cout << "-------------------" << endl;
+            cout << "------------------------------------------------" << endl;
             cout << "[1] Descomprimir" << endl;
             cout << "[0] Sair" << endl;
+
 
             //chmando função de heapSort
 
@@ -207,7 +394,9 @@ void selecionar(int selecao, ifstream* files, string path){
                 stop = high_resolution_clock::now();
                 duration = duration_cast<microseconds>(stop - start);
 
-                cout << "tempo para descompressao: " << duration.count() / pow(10, 6) << " segundos" << endl;
+                cout << "---------------------- " << n << " Reviews ---------------------------" << endl << endl;
+                cout << "tempo para descompressao: " << duration.count() / pow(10, 6) << " segundos" << endl << endl;
+                cout << "------------------------------------------------------------" << endl << endl;
 
                 reviewOrig_file.open(path + reviewsOrig_name, ios::binary | ios::trunc);
                 reviewOrig_file.write((char*)&traducao, sizeof(char) * ((int)heap->getTamannhoOrignal()+1) );
@@ -232,65 +421,74 @@ void selecionar(int selecao, ifstream* files, string path){
         }
         case 2:{
 
-            //setando streams
-            ofstream reviewOrig_file;
+            int compressoes = 3;
+            int n[3] = {10000, 100000, 1000000};
+            for(int i = 0; i < compressoes; i++){
 
-            //0 -> binario da heap
-            //1 -> binario do texto comprimido
-            ifstream read_files[2];
+                ReviewPtr *review_list =  Cronometrar::reviewList(files, n[i], big_review_list, reviews);
 
-            HuffmanHeap* heap;
+                sequenciaHuffman(review_list, n[i], path);
 
-            //lendo heap do binario
-            read_files[0].open(path + heap_name, ios::binary);
-            read_files[0].read((char*)&heap, sizeof(heap));
-            read_files[0].close();
-
-            cout << "teste" << endl;
-
-            bool* comprimido = new bool[(int) heap->getTamannhoCompressao()];
-
-            cout << "teste2" << endl;
-
-            read_files[0].open(path + reviewsComp_name, ios::binary);
-            read_files[0].read((char*)&comprimido, sizeof(comprimido));
-            read_files[0].close();
-
-            cout << "teste3" << endl;
-
-            char* original = heap->descompressaoHuffman(comprimido);
-
-            cout << "teste4" << endl;
-
-            cout << original << endl;
-
-            //salvando a heap no arquivo binario
-//            write_files[0].open(path + heap_name,  ios::binary | ios::trunc);
-//            write_files[0].write((char*)&heap, sizeof(heap));
-//            write_files[0].close();
-
-            delete heap;
-            delete [] comprimido;
+                delete [] review_list;
+            }
             break;
         }
         case 3:{
-            //cronometrarRbtBuscaId(files, big_review_list, enderecos, reviews);
-            break;
-        }
-        case 4:{
-            //cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 20);
-            break;
-        }
-        case 5:{
-            //cronometrarBTree(files, 1000000, big_review_list, enderecos, reviews, 200);
-            break;
-        }
-        case 6:{
-            //cronometrarBTree_teste(files, big_review_list, enderecos, reviews, path);
-            break;
-        }
-        case 7:{
-            //cronometrarBTreeBuscaId(files, big_review_list, enderecos, reviews);
+
+            int compressoes = 3;
+            int sequencia = 3;
+
+            ofstream txt_file;
+            txt_file.open((path + "saida.txt"), ios::out | ios::trunc);
+
+            int n[3] = {10000, 100000, 1000000};
+
+            for(int i = 0; i < sequencia; i++)
+            {
+                //0 -> comparacoes
+                //1 -> tempo de execucao p/ compressao
+                //2 -> tempo de execucao p/ descompressao
+                //3 -> taxa de compressao
+                double *totais = new double[4];
+                totais[0] = 0;
+                totais[1] = 0;
+                totais[2] = 0;
+                totais[3] = 0;
+
+                for (int j = 0; j < compressoes; j++)
+                {
+                    ReviewPtr *review_list = Cronometrar::reviewList(files, n[i], big_review_list, reviews);
+
+                    double *valores = analiseHuffman(review_list, n[i], path, txt_file);
+
+                    totais[0] += valores[0];
+                    totais[1] += valores[1];
+                    totais[2] += valores[2];
+                    totais[3] += valores[3];
+
+                    delete[] review_list;
+                }
+
+                txt_file << "----- Medias p/ " << n[i] << " Reviews executadas " << sequencia << " vezes ---------" << endl << endl;
+                txt_file << "Comparacoes: " << totais[0]/sequencia << endl;
+                txt_file << "Tempo para criacao da Huffman Tree: " << totais[1]/sequencia <<  " segundos" << endl;
+                txt_file << "tempo para descompressao: " << totais[2]/sequencia << " segundos" << endl << endl;
+                txt_file << "Taxa de compressao: " << totais[3]/sequencia << "%" << endl;
+                txt_file << "-----------------------------------------------------------------------------------" << endl << endl;
+
+                delete [] totais;
+
+                cout << "Analise em: " << (double)((i+1)*100/sequencia) << "%" << endl << endl;
+            }
+
+            txt_file.close();
+
+            cout << "-----------------------------------------" << endl << endl;
+            cout << "Analise feita com sucesso!" << endl;
+            cout << "Resultados salvos em saida.txt" << endl << endl;
+            cout << "-----------------------------------------" << endl << endl;
+
+
             break;
         }
     }

@@ -64,10 +64,13 @@ void HuffmanHeap::swapHuffmanNode(HuffmanNode **a, HuffmanNode **b) {
     *b = t;
 }
 
-void HuffmanHeap::heapify(int index) {
+void HuffmanHeap::heapify(int index, int* comparacoes) {
     int smallest = index;
     int left = 2 * index + 1;
     int right = 2 * index + 2;
+
+    //2 ifs com 2 comparacoes + 1 if com 1 comparacao
+    (*comparacoes) += 5;
 
     if (left < this->size && this->array[left]->getFreq() < this->array[smallest]->getFreq()){
         smallest = left;
@@ -79,7 +82,7 @@ void HuffmanHeap::heapify(int index) {
 
     if (smallest != index) {
         swapHuffmanNode(&this->array[smallest], &this->array[index]);
-        heapify(smallest);
+        heapify(smallest, comparacoes);
     }
 }
 
@@ -87,22 +90,24 @@ bool HuffmanHeap::conferirTamanhoUm() {
     return this->size == 1;
 }
 
-HuffmanNode* HuffmanHeap::extrairMenor() {
+HuffmanNode* HuffmanHeap::extrairMenor(int* comparacoes) {
     HuffmanNode *temp = this->array[0];
     this->array[0] = this->array[this->size - 1];
     this->size--;
 
-    heapify(0);
+    heapify(0, comparacoes);
 
     return temp;
 }
 
 // Insertion
-void HuffmanHeap::inserir(HuffmanNode *node) {
+void HuffmanHeap::inserir(HuffmanNode *node, int* comparacoes) {
     this->size++;
     int i = this->size - 1;
 
+    (*comparacoes) += 2;
     while (i && node->getFreq() < this->array[(i - 1) / 2]->getFreq()) {
+        (*comparacoes) += 2;
         this->array[i] = this->array[(i - 1) / 2];
         i = (i - 1) / 2;
     }
@@ -111,42 +116,42 @@ void HuffmanHeap::inserir(HuffmanNode *node) {
 }
 
 // BUild min heap
-void HuffmanHeap::organizar() {
+void HuffmanHeap::organizar(int* comparacoes) {
     int n = this->size - 1;
     int i;
 
     for (i = (n - 1) / 2; i >= 0; --i){
-        heapify(i);
+        heapify(i, comparacoes);
     }
 }
 
 
- void HuffmanHeap::ciarArrayEORganizar(char* data, long* freq) {
+ void HuffmanHeap::ciarArrayEORganizar(char* data, long* freq, int* comparacoes) {
     for (int i = 0; i < this->size; ++i){
         this->array[i] = new HuffmanNode(data[i], freq[i]);
     }
 
-    this->organizar();
+    this->organizar(comparacoes);
 }
 
 
-void HuffmanHeap::comprimir(char* data, long* freq) {
+void HuffmanHeap::comprimir(char* data, long* freq, int* comparacoes) {
     HuffmanNode *left, *right, *top;
-    ciarArrayEORganizar(data, freq);
+    ciarArrayEORganizar(data, freq, comparacoes);
 
     while (!conferirTamanhoUm()) {
-        left = extrairMenor();
-        right = extrairMenor();
+        left = extrairMenor(comparacoes);
+        right = extrairMenor(comparacoes);
 
         top = new HuffmanNode('\0', left->getFreq() + right->getFreq());
 
         top->setLeft(left);
         top->setRight(right);
 
-        inserir(top);
+        inserir(top, comparacoes);
     }
 
-    raiz = extrairMenor();
+    raiz = extrairMenor(comparacoes);
 }
 
 void HuffmanHeap::imprimirArray(int arr[], int n)
@@ -222,7 +227,6 @@ char* HuffmanHeap::descompressaoHuffman(bool *compressao) {
         // no folha
         if (node->ehFolha())
         {
-           // cout << node->getData();
             traducao[contador] = node->getData();
             contador++;
             node = this->raiz;
@@ -240,8 +244,8 @@ char* HuffmanHeap::descompressaoHuffman(bool *compressao) {
     return traducao;
 }
 
-void HuffmanHeap::CodigosHuffman(char* data, long* freq) {
-    comprimir(data, freq);
+void HuffmanHeap::CodigosHuffman(char* data, long* freq, int* comparacoes) {
+    comprimir(data, freq, comparacoes);
     int array[capacidade], top = 0;
     armazenarCodigos(this->raiz, array, top);
 }

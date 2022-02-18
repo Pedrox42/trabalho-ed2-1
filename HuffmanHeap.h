@@ -32,25 +32,25 @@ class HuffmanHeap {
 
         void setArray(HuffmanNode **array);
 
-        void heapify(int index);
+        void heapify(int index, int* comparacoes);
 
         bool conferirTamanhoUm();
 
-        HuffmanNode *extrairMenor();
+        HuffmanNode *extrairMenor(int* comparacoes);
 
-        void inserir(HuffmanNode *node);
+        void inserir(HuffmanNode *node, int* comparacoes);
 
-        void organizar();
+        void organizar(int* comparacoes);
 
-        void ciarArrayEORganizar(char *data, long *freq);
+        void ciarArrayEORganizar(char *data, long *freq, int* comparacoes);
 
-        void comprimir(char *data, long *freq);
+        void comprimir(char *data, long *freq, int* comparacoes);
 
         void imprimirArray(int *arr, int n);
 
         void armazenarCodigos(HuffmanNode *node, int* array, int top);
 
-        void CodigosHuffman(char *data, long *freq);
+        void CodigosHuffman(char *data, long *freq, int* comparacoes);
 
         void swapHuffmanNode(HuffmanNode **a, HuffmanNode **b);
 
